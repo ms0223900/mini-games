@@ -21,15 +21,18 @@ export const checkObjInsideCollideWithWall = (obj, wall) => {
   const rightCondition = objTRBL.r < wallTRBL.r
   const topCondition = objTRBL.t > wallTRBL.t
   const bottomCondition = objTRBL.b < wallTRBL.b
-  // console.log(objTRBL, wallTRBL)
+  console.log(objTRBL, wallTRBL)
   if(leftCondition && rightCondition && topCondition && bottomCondition) {
     return false
   } else {
     let collideRes = []
-    if(!leftCondition) { collideRes = [...collideRes, 'left'] }
-    if(!rightCondition) { collideRes = [...collideRes, 'right'] }
-    if(!topCondition) { collideRes = [...collideRes, 'top'] }
-    if(!bottomCondition) { collideRes = [...collideRes, 'bottom'] }
+    if(!leftCondition || !rightCondition) { 
+      collideRes = [...collideRes, 'xAxis'] 
+    }
+    console.log(!bottomCondition)
+    if(!topCondition || !bottomCondition) { 
+      collideRes = [...collideRes, 'yAxis'] 
+    }
     return collideRes
   }
 }

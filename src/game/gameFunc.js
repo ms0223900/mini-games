@@ -26,10 +26,12 @@ export const checkObjInsideCollideWithWall = (obj, wall) => {
     return false
   } else {
     let collideRes = []
-    if(!leftCondition) { collideRes = [...collideRes, 'left'] }
-    if(!rightCondition) { collideRes = [...collideRes, 'right'] }
-    if(!topCondition) { collideRes = [...collideRes, 'top'] }
-    if(!bottomCondition) { collideRes = [...collideRes, 'bottom'] }
+    if(!leftCondition || !rightCondition) { 
+      collideRes = [...collideRes, 'xAxis'] 
+    }
+    if(!topCondition || !bottomCondition) { 
+      collideRes = [...collideRes, 'yAxis'] 
+    }
     return collideRes
   }
 }

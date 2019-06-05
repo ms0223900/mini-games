@@ -11,8 +11,10 @@ export default () => {
     console.log(thisCanvas.current)
   })
   useEffect(() => {
+    
     myGame.current = MyGame(thisCanvas.current, canvasSpec)
     myGame.current.render()
+    console.log(myGame.current)
   }, [])
   //
   return (
