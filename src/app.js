@@ -1,8 +1,6 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 import React, { useCallback, useRef, useEffect } from 'react'
-import { Game } from './game/gameLib'
-// import { idleGame,  } from './game/Layers'
+import { MyGame } from './game/gameLib'
+import { canvasSpec } from './config'
 
 export default () => {
   const thisCanvas = useRef()
@@ -13,13 +11,16 @@ export default () => {
     console.log(thisCanvas.current)
   })
   useEffect(() => {
-    myGame.current = new Game(thisCanvas.current)
+    myGame.current = MyGame(thisCanvas.current, canvasSpec)
     myGame.current.render()
   }, [])
   //
   return (
     <div>
-      <canvas ref={ setCanvas } />
+      <canvas 
+        width={ canvasSpec.width } 
+        height={ canvasSpec.height } 
+        ref={ setCanvas } />
     </div>
   )
 }

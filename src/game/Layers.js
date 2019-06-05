@@ -14,7 +14,7 @@ import {
 
 //layers
 
-export class myLayer {
+export class Layer {
   constructor(layerObjs=[]) {
     this.layerObjs = layerObjs
   }
@@ -27,7 +27,7 @@ export class myLayer {
 }
 
 
-export const UILayer = new myLayer([
+export const UILayer = new Layer([
   // testGroupMap(100, 100),
   mainUIContainer,
   MyItemsContainer,
@@ -35,10 +35,10 @@ export const UILayer = new myLayer([
   ShopOpenIcon,
   MyShopContainer,
 ])
-export const ObjLayer = new myLayer([ 
+export const ObjLayer = new Layer([ 
   // userCharacter(120, 120) 
 ])
-export const BackLayer = new myLayer([ 
+export const BackLayer = new Layer([ 
   backTest 
 ])
   
