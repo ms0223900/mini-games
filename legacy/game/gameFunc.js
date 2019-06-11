@@ -7,12 +7,16 @@ export const getMultiAction = (times, fn) => {
     fn()
   }
 }
-const getTRBL = (obj) => ({
-  t: obj.y,
-  l: obj.x,
-  b: obj.y + obj.h,
-  r: obj.x + obj.w
-})
+const getTRBL = (obj) => {
+  const { spec } = obj
+  const { x, y, w, h } = spec
+  return ({
+    t: y,
+    l: x,
+    b: y + h,
+    r: x + w
+  })
+}
 export const checkObjInsideCollideWithWall = (obj, wall) => {
   // if collided return true
   const objTRBL = getTRBL(obj)
@@ -58,7 +62,8 @@ export const getIntersection = (a, b, c, d) => {
 export const checkMoveObjCollideWithObj = (obj1, obj2) => {
   // if collided return true
   let collideRes = []
-  const { vx, vy } = obj1
+  const { movement } = obj1
+  const { vx, vy } = movement
   
   const obj1TRBL = getTRBL(obj1)
   const obj2TRBL = getTRBL(obj2)
@@ -97,6 +102,7 @@ export const checkMoveObjCollideWithObj = (obj1, obj2) => {
   if(collideRes.length === 0) {
     return false
   } else {
+    console.log('collide')
     if(vy > 0) {
       if(collideRes.indexOf('top')) { return 'top' }
       else { return collideRes.filter(r => r !== 'bottom')[0] }
