@@ -109,6 +109,23 @@ export class BasicObj {
   }
 }
 
+export class WanderObj extends BasicObj {
+  constructor() {
+    super()
+    this.movement = {
+      ...this.movement,
+      isMove: true,
+    }
+    this.wanderSpec = {
+      wanderCount: 0,
+      wanderMax: 20,
+    }
+  }
+  wander() {
+    // if()
+  }
+}
+
 export class Ball extends BasicObj {
   constructor({ r=20, ...props }) {
     super(props)
