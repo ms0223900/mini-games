@@ -20,6 +20,7 @@ export default () => {
   return (
     <div>
       <canvas 
+        style={{ boxShadow: '0px 0px 10px #111'}}
         width={ canvasSpec.width } 
         height={ canvasSpec.height } 
         ref={ setCanvas } />

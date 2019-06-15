@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import iconImg from '../images/iconImg.png'
 import { 
   checkObjInsideCollideWithWall, 
   checkMoveObjCollideWithObj ,
@@ -91,7 +92,6 @@ export class BasicObj {
   }
   drawOnCanvas(ctx) {
     ctx.save()
-    // ctx.beginPath()
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
     ctx.fillRect(this.x, this.y, this.width, this.height)
@@ -104,14 +104,39 @@ export class BasicObj {
     this.drawOnCanvas(ctx)
   }
   render(ctx) {
+    ctx.beginPath()
     this.move()
     this.checkCollide()
     this.draw(ctx)
+    ctx.closePath()
+  }
+}
+
+export class BasicStaticImgObj extends BasicObj {
+  constructor({ opacity=1, imgSrc, ...props }) {
+    super(props)
+    this.opacity = opacity
+    this.imgSrc = imgSrc
+    this.image = new Image()
+    this.image.src = this.imgSrc
+  }
+  drawOnCanvas(ctx) {
+    // if(this.bounceStart) { this.bounceLoop() }
+    ctx.save()
+    ctx.globalAlpha = this.opacity
+    ctx.drawImage(
+      this.image, 
+      this.x, 
+      this.y, 
+      this.width, 
+      this.height
+    )
+    ctx.restore()
   }
 }
 
 export class BasicText {
-  constructor({ id='text', cloneId=0, x=0, y=0, text='default text', textConfig='16px arial', width=100, height=100, fillStyle='#111', strokeStyle='#fff', movement=null }) {
+  constructor({ id='text', cloneId=0, x=0, y=0, text='default text', textConfig='16px roboto', width=100, height=100, fillStyle='#111', strokeStyle='#fff', movement=null }) {
     this.id = id
     this.cloneId = cloneId
     this.x = x
@@ -251,15 +276,14 @@ myBall.setProp('movement', {
   vx: -10,
   vy: 10,
 })
-const myRect = new BasicObj({ x: 200, y: 0, width: 100, height: 100, fillStyle: '#3a0', collideObjs: [myBall] })
+// const myRect = new BasicObj({ x: 200, y: 0, width: 100, height: 100, fillStyle: '#3a0', collideObjs: [myBall] })
 const enemy = (x=300, y=300, newCloneId=0) => 
   new BasicObj({ x, y, id: 'enemy', cloneId: newCloneId, width: 60, height: 60, fillStyle: '#a90', })
-const getNewBullet = (x=0, y=0, newCloneId=0) => new BasicObj({ 
+const getNewBullet = (x=0, y=0, newCloneId=0) => new Ball({ 
   id: 'bullet', 
   cloneId: newCloneId, 
   x, y, 
-  width: 20, 
-  height: 20, 
+  r: 10,
   fillStyle: '#f010ad', 
   movement: {
     isMove: true,
@@ -276,7 +300,14 @@ scoreText
     e.text = e.basicTxt + e.score
   })
   .addPropForUpdate('score')
-
+const healthText = new BasicText({ x: 100, y: 20, text: '', fillStyle: '#a00' })
+  healthText
+    .setProp('health', 10)
+    .setProp('basicTxt', 'health: ')
+    .addUpdateRule((e) => {
+      e.text = e.basicTxt + e.health
+    })
+    .addPropForUpdate('health')
 console.log(scoreText)
 
 
@@ -299,7 +330,7 @@ export class Layer {
 
 const UILayer = () => new Layer()
 
-export class ControllableObj extends BasicObj {
+export class ControllableObj extends BasicStaticImgObj {
   constructor(props) {
     super(props)
     this.movement = {
@@ -312,7 +343,7 @@ export class ControllableObj extends BasicObj {
     this.moveEvent()
   }
   moveEvent() {
-    console.log(this)
+    // console.log(this)
     document.addEventListener('keydown', (e) => this.moveByUser(e))
     document.addEventListener('keyup', (e) => {
       const { keyCode } = e
@@ -333,7 +364,7 @@ export class ControllableObj extends BasicObj {
     //   }
     // }
     // this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
-    console.log(this.movement.moveSet)
+    // console.log(this.movement.moveSet)
     //move by keyCode
     if(keyCode === 37) {
       this.movement.vy = 0
@@ -349,11 +380,12 @@ export class ControllableObj extends BasicObj {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
     }
-    console.log(keyCode)
+    // console.log(keyCode)
   }
 }
 const myPlayer = new ControllableObj({
-  fillStyle: '#a0a',
+  // fillStyle: '#a0a',
+  imgSrc: iconImg,
   x: 100, y: 100,
   w: 200, h: 200,
 })
@@ -403,7 +435,7 @@ export class Game {
     if(keyCode === 32) {
       this.newGameObjs = [
         ...this.newGameObjs,
-        getNewBullet(myPlayer.x, myPlayer.y, this.gameNewCloneId), 
+        getNewBullet(myPlayer.x, myPlayer.y + myPlayer.height / 2, this.gameNewCloneId), 
       ]
       this.gameNewCloneId += 1
       console.log(this.newGameObjs)
@@ -435,6 +467,7 @@ export class Game {
     this.newGameObjs.forEach(e => e.render(this.ctx))
     myPlayer.render(this.ctx)
     scoreText.render(this.ctx)
+    healthText.render(this.ctx)
     //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
       const OBJ = this.newGameObjs[i]
@@ -442,7 +475,11 @@ export class Game {
         const enemy = this.gameEnemies[j]
          // if bullet is collided
         if( simpleCheckObjCollide(OBJ, enemy) ) {
-          scoreText.setProp('score', scoreText.score + 100)
+          this.gameProp = {
+            ...this.gameProp,
+            score: typeof(this.gameProp.score) === 'number' ? this.gameProp.score + 100 : 0
+          }
+          scoreText.setProp('score', this.gameProp.score)
           this.gameEnemies = this.gameEnemies.filter(o => o.cloneId !== enemy.cloneId)
           this.newGameObjs = this.newGameObjs.filter(o => o.cloneId !== OBJ.cloneId)
         }
