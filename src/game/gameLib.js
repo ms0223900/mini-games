@@ -45,6 +45,7 @@ export class BasicObj {
   }
   setProp(prop, value) {
     this[prop] = value
+    return this
   }
   getWallCollide(wallSpec) {
     this.wall.spec = wallSpec
@@ -109,6 +110,85 @@ export class BasicObj {
   }
 }
 
+export class BasicText {
+  constructor({ id='text', cloneId=0, x=0, y=0, text='default text', textConfig='16px arial', width=100, height=100, fillStyle='#111', strokeStyle='#fff', movement=null }) {
+    this.id = id
+    this.cloneId = cloneId
+    this.x = x
+    this.y = y
+    this.width = width
+    this.height = height
+    this.spec = {
+      x,
+      y,
+      w: this.width,
+      h: this.height,
+    }
+    //
+    this.text = text
+    this.textConfig = textConfig
+    this.fillStyle = fillStyle
+    this.strokeStyle = strokeStyle
+    //movement
+    this.movement = movement || {
+      isMove: false,
+      vx: 4,
+      vy: 4,
+      ax: 0,
+      ay: 0,
+    }
+    this.propsForUpdate = []
+    this.updateRules = []
+    this.prevProps = {}
+  }
+  setProp(prop, value) {
+    this[prop] = value
+    this.checkUpdateProp()
+    this.prevProps[prop] = value
+    return this
+  }
+  addUpdateRule(ruleFn) {
+    this.updateRules = [
+      ...this.updateRules,
+      ruleFn
+    ]
+    ruleFn(this)
+    return this
+  }
+  addPropForUpdate(prop) {
+    this.propsForUpdate = [
+      ...this.propsForUpdate,
+      prop
+    ]
+    return this
+  }
+  checkUpdateProp() {
+    for (let i = 0; i < this.propsForUpdate.length; i++) {
+      const prop = this.propsForUpdate[i]
+      if( this[prop] !== this.prevProps[prop]) {
+        for (let j = 0; j < this.updateRules.length; j++) {
+          this.updateRules[j](this)
+        }
+      }
+    }
+  }
+  //
+  drawOnCanvas(ctx) {
+    ctx.save()
+    ctx.font = this.textConfig
+    ctx.fillStyle = this.fillStyle
+    ctx.fillText(this.text, this.x, this.y)
+    ctx.restore()
+  }
+  draw(ctx) {
+    this.drawOnCanvas(ctx)
+  }
+  render(ctx) {
+    
+    this.draw(ctx)
+  }
+}
+
 export class WanderObj extends BasicObj {
   constructor() {
     super()
@@ -162,8 +242,8 @@ export class collidableObj extends BasicObj {
     this.collideProp = collideProp
   }
 }
-//
-
+//-----------------------
+//custom components
 const myBall = new Ball({ x: 440, y: 40, fillStyle: '#a00' })
 myBall.setProp('movement', {
   ...myBall.movement,
@@ -172,8 +252,8 @@ myBall.setProp('movement', {
   vy: 10,
 })
 const myRect = new BasicObj({ x: 200, y: 0, width: 100, height: 100, fillStyle: '#3a0', collideObjs: [myBall] })
-
-const enemy = new BasicObj({ x: 300, y: 100, width: 20, height: 200, fillStyle: '#a90', })
+const enemy = (x=300, y=300, newCloneId=0) => 
+  new BasicObj({ x, y, id: 'enemy', cloneId: newCloneId, width: 60, height: 60, fillStyle: '#a90', })
 const getNewBullet = (x=0, y=0, newCloneId=0) => new BasicObj({ 
   id: 'bullet', 
   cloneId: newCloneId, 
@@ -187,6 +267,19 @@ const getNewBullet = (x=0, y=0, newCloneId=0) => new BasicObj({
     vy: 0,
   } 
 })
+//score text
+const scoreText = new BasicText({ x: 400, y: 20, text: '', fillStyle: '#1a0' })
+scoreText
+  .setProp('score', 0)
+  .setProp('basicTxt', 'score: ')
+  .addUpdateRule((e) => {
+    e.text = e.basicTxt + e.score
+  })
+  .addPropForUpdate('score')
+
+console.log(scoreText)
+
+
 
 // console.log(myBall)
 
@@ -194,12 +287,17 @@ export class Layer {
   constructor(layerObjs=[]) {
     this.layerObjs = layerObjs
   }
+  addObjToLayer(obj) {
+    this.layerObjs = [...this.layerObjs, obj]
+  }
   render(ctx) {
     for (let i = 0; i < this.layerObjs.length; i++) {
       this.layerObjs[i].render(ctx)
     }
   }
 }
+
+const UILayer = () => new Layer()
 
 export class ControllableObj extends BasicObj {
   constructor(props) {
@@ -219,20 +317,22 @@ export class ControllableObj extends BasicObj {
     document.addEventListener('keyup', (e) => {
       const { keyCode } = e
       this.movement.isMove = false
-      this.movement.moveSet = this.movement.moveSet.filter(m => m !== e)
+      // this.movement.moveSet = this.movement.moveSet.filter(m => m !== e)
     })
   }
   moveByUser(e) {
     const { keyCode } = e
-    this.movement.isMove = true
-    const getMoveSet = (moveset, keyCode) => {
-      if(moveset.includes(keyCode)) {
-        return moveset
-      } else {
-        return [...moveset, keyCode]
-      }
+    if([37, 38, 39, 40].includes(keyCode)) {
+      this.movement.isMove = true
     }
-    this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
+    // const getMoveSet = (moveset, keyCode) => {
+    //   if(moveset.includes(keyCode)) {
+    //     return moveset
+    //   } else {
+    //     return [...moveset, keyCode]
+    //   }
+    // }
+    // this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
     console.log(this.movement.moveSet)
     //move by keyCode
     if(keyCode === 37) {
@@ -248,13 +348,8 @@ export class ControllableObj extends BasicObj {
     } else if(keyCode === 40) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
-    } else if(keyCode === 32) {
-      this.shootBullet()
     }
     console.log(keyCode)
-  }
-  shootBullet() {
-
   }
 }
 const myPlayer = new ControllableObj({
@@ -277,7 +372,10 @@ export class Game {
       this.frame.prev = this.frame.now
       // console.log(this.frame)
     }, 500)
+    //
     this.newGameObjs = []
+    this.gameEnemies = []
+    this.spawnEnemy = setInterval(() => this.spawnEnemyFn(), 2000)
     document.addEventListener('keydown', (e) => this.newGameEvent(e))
   }
   setGameProp(prop, value) {
@@ -311,30 +409,45 @@ export class Game {
       console.log(this.newGameObjs)
     }
   }
+  spawnEnemyFn() {
+    console.log(this.gameEnemies)
+    this.gameEnemies = [
+      ...this.gameEnemies,
+      enemy(300, 300, this.gameNewCloneId)
+        .setProp('movement', {
+          ...enemy().movement,
+          isMove: true,
+          vx: 3,
+          vy: 3,
+        })
+    ]
+    this.gameNewCloneId += 1
+  }
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
     //
     this.ctx.beginPath()
     this.drawBG()
     this.drawFPS()
-    enemy.render(this.ctx)
-    myRect.render(this.ctx)
 
-    myBall.render(this.ctx)
+    //game rule
+    this.gameEnemies.forEach(e => e.render(this.ctx))
+    this.newGameObjs.forEach(e => e.render(this.ctx))
+    myPlayer.render(this.ctx)
+    scoreText.render(this.ctx)
+    //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
       const OBJ = this.newGameObjs[i]
-      if( simpleCheckObjCollide(OBJ, enemy) ) {
-        this.newGameObjs = this.newGameObjs.filter(o => o.cloneId !== OBJ.cloneId)
-      } else {
-        OBJ.render(this.ctx)
+      for (let j = 0; j < this.gameEnemies.length; j++) {
+        const enemy = this.gameEnemies[j]
+         // if bullet is collided
+        if( simpleCheckObjCollide(OBJ, enemy) ) {
+          scoreText.setProp('score', scoreText.score + 100)
+          this.gameEnemies = this.gameEnemies.filter(o => o.cloneId !== enemy.cloneId)
+          this.newGameObjs = this.newGameObjs.filter(o => o.cloneId !== OBJ.cloneId)
+        }
+        // OBJ.render(this.ctx)
       }
-      
-    }
-    myPlayer.render(this.ctx)
-    const collideRes = simpleCheckObjCollide(myBall, myRect)
-    if(collideRes) {
-      this.setGameProp('score', this.gameProp.score + 1)
-      // console.log(this.gameProp.score)
     }
     this.ctx.closePath()
 
