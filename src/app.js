@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect } from 'react'
-import { MyGame } from './game/gameLib'
+import { MyGame } from './shootingGame'
 import { canvasSpec } from './config'
 
 export default () => {

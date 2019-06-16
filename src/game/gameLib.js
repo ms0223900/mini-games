@@ -8,10 +8,12 @@ import {
 import { canvasSpec } from '../config'
 //
 export class BasicObj {
-  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, fillStyle='#111', strokeStyle='#fff', collideObjs=[], movement=null }) {
+  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, fillStyle='#111', strokeStyle='#fff', collideObjs=[], movement=null, useWall=false }) {
+    //basic info
     this.id = id
     this.cloneId = cloneId
     this.type = type
+    this.health = 3
     //
     this.x = x
     this.y = y
@@ -34,6 +36,7 @@ export class BasicObj {
     this.collideObjs = collideObjs
     //
     this.wall = {
+      useWall,
       spec: {
         x: 0,
         y: 0,
@@ -51,8 +54,8 @@ export class BasicObj {
   getWallCollide(wallSpec) {
     this.wall.spec = wallSpec
   }
-  move() {
-    if(this.movement.isMove) {
+  wallBounce() {
+    if(this.wall.useWall) {
       const collideRes = this.wall && checkObjInsideCollideWithWall(this, this.wall)
       if(collideRes) {
         if(collideRes.includes('xAxis')) {
@@ -68,6 +71,12 @@ export class BasicObj {
           }
         }
       }
+    }
+  }
+  move() {
+    if(this.movement.isMove) {
+      this.wallBounce()
+      //
       const newX = this.x + this.movement.vx
       const newY = this.y + this.movement.vy
       this.x = newX
@@ -97,18 +106,17 @@ export class BasicObj {
     ctx.fillRect(this.x, this.y, this.width, this.height)
     ctx.stroke()
     ctx.fill()
-    // ctx.closePath()
     ctx.restore()
   }
   draw(ctx) {
+    ctx.beginPath()
     this.drawOnCanvas(ctx)
+    ctx.closePath()
   }
   render(ctx) {
-    ctx.beginPath()
     this.move()
     this.checkCollide()
     this.draw(ctx)
-    ctx.closePath()
   }
 }
 
@@ -134,6 +142,20 @@ export class BasicStaticImgObj extends BasicObj {
     ctx.restore()
   }
 }
+
+export class Enemy extends BasicStaticImgObj {
+  constructor({ timerAttackFn=() => console.log('attack'), attackTime=1300, ...props }) {
+    super(props)
+    this.timerAttack = setInterval(() => timerAttackFn(this), attackTime)
+  }
+  checkIsAlive() {
+    if(this.health <= 0) {
+      console.log('clear')
+      clearInterval(this.timerAttack)
+    }
+  }
+}
+
 
 export class BasicText {
   constructor({ id='text', cloneId=0, x=0, y=0, text='default text', textConfig='16px roboto', width=100, height=100, fillStyle='#111', strokeStyle='#fff', movement=null }) {
@@ -251,9 +273,6 @@ export class Ball extends BasicObj {
     ctx.stroke()
     ctx.fill()
     ctx.restore()
-  }
-  draw(ctx) {
-    this.drawOnCanvas(ctx)
   }
 }
 
