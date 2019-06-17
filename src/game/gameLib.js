@@ -7,8 +7,17 @@ import {
 } from './gameFunc'
 import { canvasSpec } from '../config'
 //
+
+const initBlink = {
+  useBlink: false,
+  blinkNow: false, //if false it is translucent
+  blinkCount: 0,
+  blinkMax: 30,
+  blinkInterval: 5,
+}
+
 export class BasicObj {
-  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, fillStyle='#111', strokeStyle='#fff', collideObjs=[], movement=null, useWall=false }) {
+  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, fillStyle='#111', strokeStyle='#fff', opacity=1, collideObjs=[], movement=null, useWall=false }) {
     //basic info
     this.id = id
     this.cloneId = cloneId
@@ -46,6 +55,8 @@ export class BasicObj {
     }
     this.fillStyle = fillStyle
     this.strokeStyle = strokeStyle
+    this.opacity = opacity
+    this.blinkSpec = initBlink
   }
   setProp(prop, value) {
     this[prop] = value
@@ -88,15 +99,21 @@ export class BasicObj {
       }
     }
   }
-  checkCollide() {
-    for (let i = 0; i < this.collideObjs.length; i++) {
-      if( simpleCheckObjCollide(this, this.collideObjs[i]) ) {
-        this.fillStyle = '#a00'
-        console.log()
-      } else {
-        this.fillStyle = '#3a0'
+  blinkEffect() {
+    
+    const { blinkNow, blinkCount, blinkMax, blinkInterval } = this.blinkSpec
+    if(blinkCount <= blinkMax) {
+      this.blinkSpec.blinkCount += 1
+      if(blinkCount % blinkInterval === 0) {
+        console.log('a')
+        this.blinkSpec.blinkNow = !blinkNow
+        this.opacity = 1
+      } else if(!blinkNow) {
+        console.log('b')
+        this.opacity = 0.5
       }
-      
+    } else {
+      this.blinkSpec = initBlink
     }
   }
   drawOnCanvas(ctx) {
@@ -109,13 +126,19 @@ export class BasicObj {
     ctx.restore()
   }
   draw(ctx) {
+    ctx.save()
     ctx.beginPath()
+    ctx.globalAlpha = this.opacity
+    if(this.blinkSpec.useBlink) {
+      this.blinkEffect(ctx)
+    }
     this.drawOnCanvas(ctx)
     ctx.closePath()
+    ctx.restore()
   }
   render(ctx) {
     this.move()
-    this.checkCollide()
+    // this.checkCollide()
     this.draw(ctx)
   }
 }
@@ -131,7 +154,6 @@ export class BasicStaticImgObj extends BasicObj {
   drawOnCanvas(ctx) {
     // if(this.bounceStart) { this.bounceLoop() }
     ctx.save()
-    ctx.globalAlpha = this.opacity
     ctx.drawImage(
       this.image, 
       this.x, 
@@ -150,7 +172,7 @@ export class Enemy extends BasicStaticImgObj {
   }
   checkIsAlive() {
     if(this.health <= 0) {
-      console.log('clear')
+      // console.log('clear')
       clearInterval(this.timerAttack)
     }
   }
@@ -398,6 +420,11 @@ export class ControllableObj extends BasicStaticImgObj {
     } else if(keyCode === 40) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
+    }
+    this.spec = {
+      ...this.spec,
+      x: this.x,
+      y: this.y,
     }
     // console.log(keyCode)
   }

@@ -74,12 +74,31 @@ export class ShootingGame extends Game {
       enemy.setProp('health', enemy.health - minusHp)
       enemy.checkIsAlive()
     }
+    const checkPlayerHitByTarget = (player, target) => {
+      //player hit by target
+      if(simpleCheckObjCollide(player, target)) {
+        console.log('hit!')
+        this.gameProp = {
+          ...this.gameProp,
+          playerLife: this.gameProp.playerLife - 1,
+        }
+        player.setProp('blinkSpec', {
+          ...player.blinkSpec,
+          useBlink: true,
+        })
+        healthText.setProp('health', this.gameProp.playerLife)
+        player.setProp('health', this.gameProp.playerLife)
+        return true
+      } return false
+    }
+    //
     this.gameEnemies.forEach(e => {
       //remove enemy if it is out of bound
-      if(e.x <= -100) {
+      if(e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) {
         removeGameObjs('gameEnemies', e)
         enemyHealthUpdate(e, 10000)
       } else {
+        
         e.render(this.ctx)
       }
     })
@@ -93,7 +112,7 @@ export class ShootingGame extends Game {
     })
     this.enemyBullets.forEach(e => {
       //remove enemy if it is out of bound
-      if(e.x <= -100) {
+      if(e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) {
         removeGameObjs('enemyBullets', e)
       } else {
         e.render(this.ctx)
@@ -130,10 +149,18 @@ export class ShootingGame extends Game {
 
     //animation
     requestAnimationFrame( this.render.bind(this) )
+    // if(this.gameProp.playerLife <= 0) {
+    //   window.alert('you die~')
+    //   clearInterval(this.spawnEnemy)
+    // } else {
+    //   requestAnimationFrame( this.render.bind(this) )
+    // }
+    
   }
 }
 const initGameProp = {
   score: 0,
+  playerLife: 10,
 }
 
 export const MyGame = (canvas, canvasSpec) => new ShootingGame(canvas, canvasSpec, initGameProp)
