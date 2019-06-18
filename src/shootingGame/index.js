@@ -4,6 +4,7 @@ import {
 import {  
   getNewBullet,
   getNewEnemyBullet,
+  getNewObstacle,
   myPlayer,
   // enemy01,
   spawnRandomEnemies,
@@ -19,6 +20,7 @@ export class ShootingGame extends Game {
   constructor(canvas, canvasSpec, initGameProp) {
     super(canvas, canvasSpec, initGameProp)
     this.enemyBullets = []
+    this.spawnObstacle = setInterval(() => this.spawnObstacleFn(), 3000)
   }
   shootBullet(bulletFn=getNewBullet, obj=myPlayer) {
     this.newGameObjs = [
@@ -33,6 +35,13 @@ export class ShootingGame extends Game {
     if(keyCode === 32) {
       this.shootBullet()
     }
+  }
+  spawnObstacleFn() {
+    this.gameEnemies = [
+      ...this.gameEnemies,
+      getNewObstacle(this.canvasSpec.width + 300, this.canvasSpec.height - 100, this.gameNewCloneId, 0)
+    ]
+    this.gameNewCloneId += 1
   }
   spawnEnemyFn() {
     const bulllll = (obj) => {
@@ -72,24 +81,29 @@ export class ShootingGame extends Game {
     }
     const enemyHealthUpdate = (enemy, minusHp=2) => {
       enemy.setProp('health', enemy.health - minusHp)
-      enemy.checkIsAlive()
+      enemy.checkIsAlive && enemy.checkIsAlive()
     }
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
-      if(simpleCheckObjCollide(player, target)) {
-        console.log('hit!')
-        this.gameProp = {
-          ...this.gameProp,
-          playerLife: this.gameProp.playerLife - 1,
-        }
-        player.setProp('blinkSpec', {
-          ...player.blinkSpec,
-          useBlink: true,
-        })
-        healthText.setProp('health', this.gameProp.playerLife)
-        player.setProp('health', this.gameProp.playerLife)
-        return true
-      } return false
+        if(simpleCheckObjCollide(player, target) && !player.noHurt) {
+          console.log('hit!')
+          this.gameProp = {
+            ...this.gameProp,
+            playerLife: this.gameProp.playerLife - 1,
+          }
+          player.setProp('blinkSpec', {
+            ...player.blinkSpec,
+            useBlink: true,
+          })
+          healthText.setProp('health', this.gameProp.playerLife)
+          player.setProp('health', this.gameProp.playerLife)
+          player.noHurt = true
+          player.endNoHurt()
+          //
+          if(target.type === 'obs') {
+            return false
+          } return true
+        } return false
     }
     //
     this.gameEnemies.forEach(e => {
@@ -138,7 +152,7 @@ export class ShootingGame extends Game {
           //update enemy health
           enemyHealthUpdate(enemy)
           //remove collided bullet and enemy
-          if(enemy.health <= 0) {
+          if(enemy.health <= 0 && enemy.type !== 'obs') {
             removeGameObjs('gameEnemies', enemy)
           }
           removeGameObjs('newGameObjs', OBJ)

@@ -17,7 +17,7 @@ const initBlink = {
 }
 
 export class BasicObj {
-  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, fillStyle='#111', strokeStyle='#fff', opacity=1, collideObjs=[], movement=null, useWall=false }) {
+  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, rotate=0, fillStyle='#111', strokeStyle='#fff', opacity=1, collideObjs=[], movement=null, useWall=false, hitbox=null }) {
     //basic info
     this.id = id
     this.cloneId = cloneId
@@ -28,11 +28,22 @@ export class BasicObj {
     this.y = y
     this.width = width
     this.height = height
-    this.spec = {
-      x,
-      y,
+    this.rotate = rotate
+    //
+    this.dev = false
+    this.hitbox = hitbox || {
       w: this.width,
       h: this.height,
+    }
+    this.hitboxOffset = {
+      x: (this.width - this.hitbox.w) / 2,
+      y: (this.height - this.hitbox.h) / 2,
+    }
+    this.spec = {
+      x: this.x + this.hitboxOffset.x,
+      y: this.y + this.hitboxOffset.y,
+      w: this.hitbox.w,
+      h: this.hitbox.h
     }
     //movement
     this.movement = movement || {
@@ -84,6 +95,14 @@ export class BasicObj {
       }
     }
   }
+  updateSpec(x, y, w, h=this.h) {
+    this.spec = {
+      x: x + this.hitboxOffset.x,
+      y: y + this.hitboxOffset.y,
+      w: w || this.spec.w, 
+      h: h || this.spec.h,
+    }
+  }
   move() {
     if(this.movement.isMove) {
       this.wallBounce()
@@ -92,24 +111,17 @@ export class BasicObj {
       const newY = this.y + this.movement.vy
       this.x = newX
       this.y = newY
-      this.spec = {
-        ...this.spec,
-        x: newX,
-        y: newY,
-      }
+      this.updateSpec(newX, newY)
     }
   }
   blinkEffect() {
-    
     const { blinkNow, blinkCount, blinkMax, blinkInterval } = this.blinkSpec
     if(blinkCount <= blinkMax) {
       this.blinkSpec.blinkCount += 1
       if(blinkCount % blinkInterval === 0) {
-        console.log('a')
         this.blinkSpec.blinkNow = !blinkNow
         this.opacity = 1
       } else if(!blinkNow) {
-        console.log('b')
         this.opacity = 0.5
       }
     } else {
@@ -129,6 +141,7 @@ export class BasicObj {
     ctx.save()
     ctx.beginPath()
     ctx.globalAlpha = this.opacity
+    ctx.rotate(this.rotate * Math.PI / 180)
     if(this.blinkSpec.useBlink) {
       this.blinkEffect(ctx)
     }
@@ -152,6 +165,7 @@ export class BasicStaticImgObj extends BasicObj {
     this.image.src = this.imgSrc
   }
   drawOnCanvas(ctx) {
+    const { x, y, w, h } = this.spec
     // if(this.bounceStart) { this.bounceLoop() }
     ctx.save()
     ctx.drawImage(
@@ -161,6 +175,9 @@ export class BasicStaticImgObj extends BasicObj {
       this.width, 
       this.height
     )
+    if(this.dev) {
+      ctx.fillRect(x, y, w, h)
+    }
     ctx.restore()
   }
 }
@@ -381,6 +398,10 @@ export class ControllableObj extends BasicStaticImgObj {
       vy: 0,
       moveSet: [],
     }
+    this.noHurt = false
+    this.endNoHurt = () => setTimeout(() => {
+      this.noHurt = false
+    }, 500)
     this.moveEvent()
   }
   moveEvent() {
@@ -420,11 +441,6 @@ export class ControllableObj extends BasicStaticImgObj {
     } else if(keyCode === 40) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
-    }
-    this.spec = {
-      ...this.spec,
-      x: this.x,
-      y: this.y,
     }
     // console.log(keyCode)
   }
@@ -509,32 +525,7 @@ export class Game {
     this.drawFPS()
 
     //game rule
-    this.gameEnemies.forEach(e => e.render(this.ctx))
-    this.newGameObjs.forEach(e => e.render(this.ctx))
-    myPlayer.render(this.ctx)
-    scoreText.render(this.ctx)
-    healthText.render(this.ctx)
-    //check bullets and ememies
-    for (let i = 0; i < this.newGameObjs.length; i++) {
-      const OBJ = this.newGameObjs[i]
-      for (let j = 0; j < this.gameEnemies.length; j++) {
-        const enemy = this.gameEnemies[j]
-         // if bullet is collided
-        if( simpleCheckObjCollide(OBJ, enemy) ) {
-          this.gameProp = {
-            ...this.gameProp,
-            score: typeof(this.gameProp.score) === 'number' ? this.gameProp.score + 100 : 0
-          }
-          scoreText.setProp('score', this.gameProp.score)
-          this.gameEnemies = this.gameEnemies.filter(o => o.cloneId !== enemy.cloneId)
-          this.newGameObjs = this.newGameObjs.filter(o => o.cloneId !== OBJ.cloneId)
-        }
-        // OBJ.render(this.ctx)
-      }
-    }
-    this.ctx.closePath()
-
-    //animation
+    
     requestAnimationFrame( this.render.bind(this) )
   }
 }

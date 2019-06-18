@@ -11,6 +11,7 @@ import iconImg from '../images/iconImg.png'
 import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
 import monster03 from '../images/monster03.png'
+import building from '../images/building.png'
 
 //custom components
 export const myBall = new Ball({ x: 440, y: 40, fillStyle: '#a00' })
@@ -59,6 +60,23 @@ export const getNewEnemyBullet = (x=0, y=0, newCloneId=0) => new Ball({
     vy: 0,
   } 
 })
+export const getNewObstacle = (x, y, cloneId, rotate) => new BasicStaticImgObj({
+  id: 'obstacle',
+  type: 'obs',
+  cloneId,
+  x, y,
+  imgSrc: building,
+  width: 250,
+  height: 430,
+  rotate,
+  movement: {
+    isMove: true,
+    vx: -3, 
+    vy: 0,
+  } 
+})
+
+
 //score text
 export const scoreText = new BasicText({ x: 400, y: 20, text: '', fillStyle: '#1a0' })
 scoreText
@@ -82,7 +100,8 @@ export const myPlayer = new ControllableObj({
   // fillStyle: '#a0a',
   imgSrc: iconImg,
   x: 100, y: 100,
-  w: 200, h: 200,
+  width: 100, height: 100,
+  hitbox: { w: 50, h: 50 }
 })
 
 
