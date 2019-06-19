@@ -60,7 +60,7 @@ export const getNewEnemyBullet = (x=0, y=0, newCloneId=0) => new Ball({
     vy: 0,
   } 
 })
-export const getNewObstacle = (x, y, cloneId, rotate) => new BasicStaticImgObj({
+export const getNewObstacle = (x, y, cloneId, rotate=0, zoomRatio=1) => new BasicStaticImgObj({
   id: 'obstacle',
   type: 'obs',
   cloneId,
@@ -68,7 +68,7 @@ export const getNewObstacle = (x, y, cloneId, rotate) => new BasicStaticImgObj({
   imgSrc: building,
   width: 250,
   height: 430,
-  rotate,
+  rotate, zoomRatio,
   movement: {
     isMove: true,
     vx: -3, 

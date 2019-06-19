@@ -17,17 +17,27 @@ const initBlink = {
 }
 
 export class BasicObj {
-  constructor({ id='basicObj', cloneId=0, type='normal', x=0, y=0, width=100, height=100, rotate=0, fillStyle='#111', strokeStyle='#fff', opacity=1, collideObjs=[], movement=null, useWall=false, hitbox=null }) {
+  constructor({ 
+    id='basicObj', cloneId=0, type='normal', 
+    x=0, y=0, width=100, height=100, 
+    rotate=0, zoomRatio=1,
+    fillStyle='#111', strokeStyle='#fff', opacity=1, 
+    collideObjs=[], 
+    movement=null, 
+    useWall=false, 
+    hitbox=null 
+  }) {
     //basic info
     this.id = id
     this.cloneId = cloneId
     this.type = type
     this.health = 3
     //
+    this.zoomRatio = zoomRatio //origin is top left
     this.x = x
     this.y = y
-    this.width = width
-    this.height = height
+    this.width = width * this.zoomRatio
+    this.height = height * this.zoomRatio
     this.rotate = rotate
     //
     this.dev = false
@@ -406,10 +416,15 @@ export class ControllableObj extends BasicStaticImgObj {
   }
   moveEvent() {
     // console.log(this)
-    document.addEventListener('keydown', (e) => this.moveByUser(e))
+    // document.addEventListener('keydown', (e) => this.moveByUser(e))
     document.addEventListener('keyup', (e) => {
       const { keyCode } = e
-      this.movement.isMove = false
+      // this.movement.isMove = false
+      this.movement = {
+        ...this.movement,
+        vx: 0,
+        vy: 0,
+      }
       // this.movement.moveSet = this.movement.moveSet.filter(m => m !== e)
     })
   }

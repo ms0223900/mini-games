@@ -20,6 +20,7 @@ export class ShootingGame extends Game {
   constructor(canvas, canvasSpec, initGameProp) {
     super(canvas, canvasSpec, initGameProp)
     this.enemyBullets = []
+    this.canShootBullet = true
     this.spawnObstacle = setInterval(() => this.spawnObstacleFn(), 3000)
   }
   shootBullet(bulletFn=getNewBullet, obj=myPlayer) {
@@ -28,18 +29,22 @@ export class ShootingGame extends Game {
       bulletFn(obj.x, obj.y + obj.height / 2, this.gameNewCloneId), 
     ]
     this.gameNewCloneId += 1
+    this.canShootBullet = false
+    setTimeout(() => { this.canShootBullet = true }, 300)
     console.log(this.newGameObjs)
   }
   newGameEvent(e) {
     const { keyCode } = e
-    if(keyCode === 32) {
+    if(keyCode === 32 && this.canShootBullet) {
       this.shootBullet()
     }
+    myPlayer.moveByUser(e)
   }
   spawnObstacleFn() {
+    const randZoomRatio = (~~(Math.random() * 6) + 5) / 10
     this.gameEnemies = [
       ...this.gameEnemies,
-      getNewObstacle(this.canvasSpec.width + 300, this.canvasSpec.height - 100, this.gameNewCloneId, 0)
+      getNewObstacle(this.canvasSpec.width + 300, this.canvasSpec.height - 100, this.gameNewCloneId, 0, randZoomRatio)
     ]
     this.gameNewCloneId += 1
   }
