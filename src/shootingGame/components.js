@@ -7,6 +7,7 @@ import {
   BasicStaticImgObj,
   ControllableObj,
 } from '../game/gameLib'
+import { getProbability } from './levelConfig'
 import iconImg from '../images/iconImg.png'
 import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
@@ -25,13 +26,18 @@ myBall.setProp('movement', {
 //
 const newEnemy = ( id='enemy', imgSrc, movement) => (x=300, y=300, cloneId=0, timerAttackFn) => 
 new Enemy({ x, y, id, cloneId, width: 80, height: 80, imgSrc, useWall: false, movement, timerAttackFn })
+//
+export const boss = (id='boss', imgSrc=monster03, movement) => (x=700, y=300, cloneId=0, timerAttackFn) => 
+new Enemy({ x, y, id, cloneId, width: 400, height: 400, imgSrc, useWall: false, movement, timerAttackFn, health: 20, }) 
+
 export const enemy01 = newEnemy('enemy01', monster01, { isMove: true, vx: -3, vy: 0, })
 export const enemy02 = newEnemy('enemy02', monster02, { isMove: true, vx: -5, vy: 0, })
 export const enemy03 = newEnemy('enemy03', monster03, { isMove: true, vx: -7, vy: 0, })
 
-export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn) => {
+export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0.33, 0.33, 0.33]) => {
   const enemies = [enemy01, enemy02, enemy03]
-  const num = Math.round( Math.random() * 2 )
+  //enemy spawn probability
+  const num = getProbability(enemyPercent) || 0
   return enemies[num](x, y, cloneId, timerAttackFn)
 }
 
@@ -77,23 +83,23 @@ export const getNewObstacle = (x, y, cloneId, rotate=0, zoomRatio=1) => new Basi
 })
 
 
-//score text
-export const scoreText = new BasicText({ x: 400, y: 20, text: '', fillStyle: '#1a0' })
-scoreText
-  .setProp('score', 0)
-  .setProp('basicTxt', 'score: ')
-  .addUpdateRule((e) => {
-    e.text = e.basicTxt + e.score
-  })
-  .addPropForUpdate('score')
-export const healthText = new BasicText({ x: 100, y: 20, text: '', fillStyle: '#a00' })
-  healthText
-    .setProp('health', 10)
-    .setProp('basicTxt', 'health: ')
-    .addUpdateRule((e) => {
-      e.text = e.basicTxt + e.health
-    })
-    .addPropForUpdate('health')
+//text components
+export const numericText = (x, y, fillStyle, prop=0, value=0) => {
+  const text = new BasicText({ x, y, text: '', fillStyle, })
+  return (
+    text
+      .setProp(prop, value)
+      .setProp('basicTxt', `${ prop }: `)
+      .addUpdateRule((e) => {
+        e.text = e.basicTxt + e[prop]
+      })
+      .addPropForUpdate(prop)
+  )
+}
+export const scoreText = numericText(800, 20, '#1a0', 'score', 0)
+export const healthText = numericText(100, 20, '#a00', 'health', 10)
+export const levelText = numericText(900, 20, '#111', 'level', 1)
+
 //
 
 export const myPlayer = new ControllableObj({

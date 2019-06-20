@@ -8,12 +8,15 @@ import {
   myPlayer,
   // enemy01,
   spawnRandomEnemies,
+  boss,
   scoreText,
   healthText,
+  levelText,
 } from './components'
 import {  
   simpleCheckObjCollide
 } from '../game/gameFunc'
+import { levelConfig } from './levelConfig'
 
 
 export class ShootingGame extends Game {
@@ -48,30 +51,56 @@ export class ShootingGame extends Game {
     ]
     this.gameNewCloneId += 1
   }
-  spawnEnemyFn() {
-    const bulllll = (obj) => {
-      this.enemyBullets = [
-        ...this.enemyBullets,
-        getNewEnemyBullet(obj.x, obj.y + obj.height / 2, this.gameNewCloneId), 
-      ]
-      this.gameNewCloneId += 1
-    }
-
-    console.log(this.gameEnemies)
-    const randomPos = {
-      x: this.canvasSpec.width + 30,
-      y: Math.round( Math.random() * (this.canvasSpec.height - 82) ),
-    }
+  spawnBoss() {
+    this.gameProp.bossFight = true
     this.gameEnemies = [
       ...this.gameEnemies,
-      spawnRandomEnemies(
-        randomPos.x, 
-        randomPos.y, 
-        this.gameNewCloneId, 
-        bulllll,
-      ),
+      boss()(),
     ]
+    console.log(this.gameEnemies)
     this.gameNewCloneId += 1
+  }
+  spawnEnemyFn() {
+    const level = this.gameProp.level
+    const maxLevel = levelConfig.length - 1
+    const thisLevel = levelConfig[level]
+    //check amount in this level is fulfilled or not
+    if(level < maxLevel && this.gameProp.enemyAmountInThisLevel >= thisLevel.enemyAmount) {
+      //update level
+      this.gameProp.level += 1
+      levelText.setProp('level', levelConfig[this.gameProp.level].level)
+      this.gameProp.enemyAmountInThisLevel = 0
+      //spawn boss
+      this.spawnBoss()
+    } else if (!this.gameProp.bossFight) {
+      console.log(level)
+      //spawn enemy
+      const bulllll = (obj) => {
+        this.enemyBullets = [
+          ...this.enemyBullets,
+          getNewEnemyBullet(obj.x, obj.y + obj.height / 2, this.gameNewCloneId), 
+        ]
+        this.gameNewCloneId += 1
+      }
+  
+      console.log(this.gameEnemies)
+      const randomPos = {
+        x: this.canvasSpec.width + 30,
+        y: Math.round( Math.random() * (this.canvasSpec.height - 82) ),
+      }
+      this.gameEnemies = [
+        ...this.gameEnemies,
+        spawnRandomEnemies(
+          randomPos.x, 
+          randomPos.y, 
+          this.gameNewCloneId, 
+          bulllll,
+          thisLevel.enemyPercent // spawn percentage from levelConfig
+        ),
+      ]
+      this.gameProp.enemyAmountInThisLevel += 1
+      this.gameNewCloneId += 1
+    }
   }
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
@@ -86,6 +115,7 @@ export class ShootingGame extends Game {
     }
     const enemyHealthUpdate = (enemy, minusHp=2) => {
       enemy.setProp('health', enemy.health - minusHp)
+      
       enemy.checkIsAlive && enemy.checkIsAlive()
     }
     const checkPlayerHitByTarget = (player, target) => {
@@ -113,11 +143,10 @@ export class ShootingGame extends Game {
     //
     this.gameEnemies.forEach(e => {
       //remove enemy if it is out of bound
-      if(e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) {
+      if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
         removeGameObjs('gameEnemies', e)
         enemyHealthUpdate(e, 10000)
       } else {
-        
         e.render(this.ctx)
       }
     })
@@ -137,9 +166,11 @@ export class ShootingGame extends Game {
         e.render(this.ctx)
       }
     })
+    //render non destroied obj
     myPlayer.render(this.ctx)
     scoreText.render(this.ctx)
     healthText.render(this.ctx)
+    levelText.render(this.ctx)
     //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
       const OBJ = this.newGameObjs[i]
@@ -148,17 +179,26 @@ export class ShootingGame extends Game {
         const enemy = this.gameEnemies[j]
          // if bullet is collided
         if( simpleCheckObjCollide(OBJ, enemy) ) {
-          //update score
-          this.gameProp = {
-            ...this.gameProp,
-            score: typeof(this.gameProp.score) === 'number' ? this.gameProp.score + 100 : 0
-          }
-          scoreText.setProp('score', this.gameProp.score)
+          //enemy blink effect
+          enemy.setProp('blinkSpec', {
+            ...enemy.blinkSpec,
+            useBlink: true,
+          })
+          
           //update enemy health
           enemyHealthUpdate(enemy)
-          //remove collided bullet and enemy
+          //if enemy die, remove collided bullet and enemy
           if(enemy.health <= 0 && enemy.type !== 'obs') {
             removeGameObjs('gameEnemies', enemy)
+            //update score
+            this.gameProp = {
+              ...this.gameProp,
+              score: typeof(this.gameProp.score) === 'number' ? this.gameProp.score + 100 : 0
+            }
+            scoreText.setProp('score', this.gameProp.score)
+            if(enemy.id === 'boss') {
+              this.gameProp.bossFight = false
+            }
           }
           removeGameObjs('newGameObjs', OBJ)
         }
@@ -178,8 +218,11 @@ export class ShootingGame extends Game {
   }
 }
 const initGameProp = {
+  level: 0, // array seq, display is level 1
   score: 0,
   playerLife: 10,
+  enemyAmountInThisLevel: 0,
+  bossFight: false,
 }
 
 export const MyGame = (canvas, canvasSpec) => new ShootingGame(canvas, canvasSpec, initGameProp)

@@ -18,7 +18,7 @@ const initBlink = {
 
 export class BasicObj {
   constructor({ 
-    id='basicObj', cloneId=0, type='normal', 
+    id='basicObj', cloneId=0, type='normal', health=3,
     x=0, y=0, width=100, height=100, 
     rotate=0, zoomRatio=1,
     fillStyle='#111', strokeStyle='#fff', opacity=1, 
@@ -31,7 +31,7 @@ export class BasicObj {
     this.id = id
     this.cloneId = cloneId
     this.type = type
-    this.health = 3
+    this.health = health
     //
     this.zoomRatio = zoomRatio //origin is top left
     this.x = x
@@ -484,7 +484,8 @@ export class Game {
     //
     this.newGameObjs = []
     this.gameEnemies = []
-    this.spawnEnemy = setInterval(() => this.spawnEnemyFn(), 2000)
+    this.spawnEnemyRate = 500
+    this.spawnEnemy = setInterval(() => this.spawnEnemyFn(), this.spawnEnemyRate)
     document.addEventListener('keydown', (e) => this.newGameEvent(e))
   }
   setGameProp(prop, value) {
