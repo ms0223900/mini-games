@@ -58,11 +58,13 @@ export class BasicObj {
     //movement
     this.movement = movement || {
       isMove: false,
+      vBasic: 6,
       vx: 4,
       vy: 4,
       ax: 0,
       ay: 0,
     }
+    this.newBehavior = []
     this.collideObjs = collideObjs
     //
     this.wall = {
@@ -114,7 +116,9 @@ export class BasicObj {
     }
   }
   move() {
+    this.newBehavior.forEach(b => b(this))
     if(this.movement.isMove) {
+      
       this.wallBounce()
       //
       const newX = this.x + this.movement.vx
@@ -167,16 +171,23 @@ export class BasicObj {
 }
 
 export class BasicStaticImgObj extends BasicObj {
-  constructor({ opacity=1, imgSrc, ...props }) {
+  constructor({ opacity=1, imgSrc, status, ...props }) {
     super(props)
     this.opacity = opacity
+    this.statusNow = 'default'
+    this.status = {
+      default: imgSrc,
+    }
     this.imgSrc = imgSrc
     this.image = new Image()
     this.image.src = this.imgSrc
   }
   drawOnCanvas(ctx) {
     const { x, y, w, h } = this.spec
+    const statusNow = this.statusNow
+    const imgNow = this.status[statusNow]
     // if(this.bounceStart) { this.bounceLoop() }
+    this.image.src = imgNow
     ctx.save()
     ctx.drawImage(
       this.image, 
@@ -195,13 +206,26 @@ export class BasicStaticImgObj extends BasicObj {
 export class Enemy extends BasicStaticImgObj {
   constructor({ timerAttackFn=() => console.log('attack'), attackTime=1300, ...props }) {
     super(props)
-    this.timerAttack = setInterval(() => timerAttackFn(this), attackTime)
+    this.timerAttack = setInterval(() => {
+      timerAttackFn(this)
+      this.statusNow = this.status.attack ? 'attack' : 'default'
+      setTimeout(() => {
+        this.statusNow = 'default'
+      }, 500)
+    }, attackTime)
   }
   checkIsAlive() {
     if(this.health <= 0) {
       // console.log('clear')
       clearInterval(this.timerAttack)
     }
+  }
+  setNewMovement(fn) {
+    this.newBehavior = [
+      ...this.newBehavior,
+      fn //(e) => {}
+    ]
+    return this
   }
 }
 

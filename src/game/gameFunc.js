@@ -238,8 +238,6 @@ export const mergeArrObjs = (...arrObjs) => {
   }
   return res
 }
-
-
 export const getIntersection = (a, b, c, d) => {
   const areaABC = (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x)
   const areaABD = (a.x - d.x) * (b.y - d.y) - (a.y - d.y) * (b.x - d.x)
@@ -320,4 +318,42 @@ export const checkMoveObjCollideWithObj = (obj1, obj2) => {
   //   }
   //   return true
   // }
+}
+
+export const getUnitVector = (p1, p2) => {
+  //direction is p1 --> p2
+  const vector = [ 
+    (p2.x + p2.width / 2) - (p1.x + p1.width / 2), 
+    (p2.y + p2.height / 2) - (p1.y + p1.height / 2),
+  ]
+  const length = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1])
+  return [ vector[0] / length, vector[1] / length ]
+}
+
+export const getVelocity = (p1, p2, v) => ({
+  vx: v * getUnitVector(p1, p2)[0],
+  vy: v * getUnitVector(p1, p2)[1],
+})
+
+export const getAngleVelocity = (deg, v) => ({
+  vx: v * Math.cos(deg * Math.PI / 180),
+  vy: v * Math.sin(deg * Math.PI / 180),
+})
+
+export const getIntervalDeg = (baseDeg=90, initDeg=150, degAmount=5) => {
+  const degRange = 180 - ((initDeg - baseDeg) * 2)
+  return ~~(degRange / degAmount)
+}
+
+export const reduceArrPrevAll = (arr, i) => (
+  arr.slice(0, i + 1).reduce((a=0, b) => a + b, 0)
+)
+
+export const getProbability = (percentArr) => {
+  const rand = Math.round(Math.random() * 100) / 100
+  for (let i = 0; i < percentArr.length; i++) {
+    if(rand >= reduceArrPrevAll(percentArr, i - 1) && rand < reduceArrPrevAll(percentArr, i)) {
+      return i
+    }
+  }
 }

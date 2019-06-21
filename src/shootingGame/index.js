@@ -1,9 +1,11 @@
+/* eslint-disable no-unused-vars */
 import {  
   Game
 } from '../game/gameLib'
 import {  
   getNewBullet,
   getNewEnemyBullet,
+  getNewDirectiveBullet,
   getNewObstacle,
   myPlayer,
   // enemy01,
@@ -14,9 +16,13 @@ import {
   levelText,
 } from './components'
 import {  
-  simpleCheckObjCollide
+  simpleCheckObjCollide,
+  getVelocity,
+  getAngleVelocity,
+  getIntervalDeg,
 } from '../game/gameFunc'
 import { levelConfig } from './levelConfig'
+import { getProbability } from '../game/gameFunc'
 
 
 export class ShootingGame extends Game {
@@ -25,6 +31,7 @@ export class ShootingGame extends Game {
     this.enemyBullets = []
     this.canShootBullet = true
     this.spawnObstacle = setInterval(() => this.spawnObstacleFn(), 3000)
+    // this.spawnBossBullets = setInterval(() => this.bossShootBullets(), 1000)
   }
   shootBullet(bulletFn=getNewBullet, obj=myPlayer) {
     this.newGameObjs = [
@@ -35,6 +42,74 @@ export class ShootingGame extends Game {
     this.canShootBullet = false
     setTimeout(() => { this.canShootBullet = true }, 300)
     console.log(this.newGameObjs)
+  }
+  bossShootBullets() {
+    if(this.gameProp.bossFight) {
+      const boss = this.gameEnemies.filter(en => en.id === 'boss')
+      if(boss.length > 0) {
+        const obj = boss[0]
+        const basicV = 10
+
+        //single directive bullet
+        const spawnDirectiveBullet = () => {
+          const v = getVelocity(obj, myPlayer, basicV)
+          this.enemyBullets = [
+            ...this.enemyBullets,
+            getNewDirectiveBullet(
+              obj,
+              v.vx,
+              v.vy, 
+              this.gameNewCloneId
+            ), 
+          ]
+          this.gameNewCloneId += 1
+        }
+        //multi spread bullets
+        const spawnSpreadBullets = () => {
+          const bulletsCount = 5 // deg from 150
+          const startDeg = 150
+          const degInterval = getIntervalDeg(90, startDeg, bulletsCount)
+          for (let i = 0; i < bulletsCount; i++) {
+            const degNow = startDeg + i * degInterval
+            const v = getAngleVelocity(degNow, basicV)
+            this.enemyBullets = [
+              ...this.enemyBullets,
+              getNewDirectiveBullet(
+                obj,
+                v.vx,
+                v.vy, 
+                this.gameNewCloneId + i + 1
+              ), 
+            ]
+          }
+          console.log(this.enemyBullets)
+          this.gameNewCloneId += 5
+        }
+        //missile
+        const spawnMissileBullet = () => {
+          const v = getVelocity(obj, myPlayer, basicV)
+          const newBullet = getNewDirectiveBullet(
+            obj,
+            v.vx,
+            v.vy, 
+            this.gameNewCloneId,
+            'missile'
+          )
+          newBullet.isMissile = true
+          this.enemyBullets = [
+            ...this.enemyBullets,
+            newBullet, 
+          ]
+          setTimeout(() => { newBullet.isMissile = false }, 2000)
+          this.gameNewCloneId += 1
+        }
+        //random spawn bullets
+        const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet]
+        const bulletProbability = [0.2, 0.1, 0.7] //maybe differ from different boss
+        const bulletRand = getProbability(bulletProbability)
+        bulletFns[bulletRand]()
+      }
+    }
   }
   newGameEvent(e) {
     const { keyCode } = e
@@ -53,9 +128,10 @@ export class ShootingGame extends Game {
   }
   spawnBoss() {
     this.gameProp.bossFight = true
+    const fn = () => { this.bossShootBullets() }
     this.gameEnemies = [
       ...this.gameEnemies,
-      boss()(),
+      boss(700, 300, this.gameNewCloneId, fn),
     ]
     console.log(this.gameEnemies)
     this.gameNewCloneId += 1
@@ -115,7 +191,6 @@ export class ShootingGame extends Game {
     }
     const enemyHealthUpdate = (enemy, minusHp=2) => {
       enemy.setProp('health', enemy.health - minusHp)
-      
       enemy.checkIsAlive && enemy.checkIsAlive()
     }
     const checkPlayerHitByTarget = (player, target) => {
@@ -141,15 +216,6 @@ export class ShootingGame extends Game {
         } return false
     }
     //
-    this.gameEnemies.forEach(e => {
-      //remove enemy if it is out of bound
-      if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
-        removeGameObjs('gameEnemies', e)
-        enemyHealthUpdate(e, 10000)
-      } else {
-        e.render(this.ctx)
-      }
-    })
     this.newGameObjs.forEach(e => {
       //remove bullet if it is out of bound
       if(e.x >= this.canvasSpec.width + 100) {
@@ -159,9 +225,38 @@ export class ShootingGame extends Game {
       }
     })
     this.enemyBullets.forEach(e => {
+      const missileRedirect = () => {
+        const missiles = this.enemyBullets.filter(en => en.id === 'missile')
+        for (let i = 0; i < missiles.length; i++) {
+          const el = missiles[i]
+          if(el.isMissile) {
+            const v = getVelocity(el, myPlayer, el.movement.vBasic || 6)
+            el.movement = {
+              ...el.movement,
+              vx: v.vx,
+              vy: v.vy,
+            }
+          }
+        }
+      }
       //remove enemy if it is out of bound
-      if(e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) {
+      const checkIsOutOfBounding = (e) => (
+        e.x <= -100 || e.x >= this.canvasSpec.width + 100 ||
+        e.y <= -100 || e.y >= this.canvasSpec.height + 100
+      )
+      if(checkIsOutOfBounding(e) || checkPlayerHitByTarget(myPlayer, e)) {
         removeGameObjs('enemyBullets', e)
+      } else {
+        missileRedirect()
+        e.render(this.ctx)
+      }
+    })
+    //after bullets render
+    this.gameEnemies.forEach(e => {
+      //remove enemy if it is out of bound
+      if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
+        removeGameObjs('gameEnemies', e)
+        enemyHealthUpdate(e, 10000)
       } else {
         e.render(this.ctx)
       }

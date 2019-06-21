@@ -20,17 +20,3 @@ export const levelConfig = [
     enemyPercent: [0.1, 0.1, 0.8]
   },
 ]
-
-export const reduceArrPrevAll = (arr, i) => (
-  arr.slice(0, i + 1).reduce((a=0, b) => a + b, 0)
-)
-
-export const getProbability = (percentArr) => {
-  const rand = Math.round(Math.random() * 100) / 100
-  for (let i = 0; i < percentArr.length; i++) {
-    if(rand >= reduceArrPrevAll(percentArr, i - 1) && rand < reduceArrPrevAll(percentArr, i)) {
-      return i
-    }
-      
-  }
-}
