@@ -7,6 +7,7 @@ import {
   getNewEnemyBullet,
   getNewDirectiveBullet,
   getNewObstacle,
+  getNewBuffItem,
   myPlayer,
   // enemy01,
   spawnRandomEnemies,
@@ -25,20 +26,83 @@ import { levelConfig } from './levelConfig'
 import { getProbability } from '../game/gameFunc'
 
 
+//bullet fn
+const spawnDirectiveBullet = (obj1, obj2, basicV, cloneId) => {
+  const v = getVelocity(obj1, obj2, basicV)
+  return getNewDirectiveBullet(
+    obj1,v.vx,v.vy, cloneId,
+  )
+}
+//multi spread bullets
+const spawnSpreadBullets = (obj, basicV, shootSide='left', gameInstance, bulletsProp='enemyBullets') => {
+  const bulletsCount = 5 // deg from 150
+  const baseDeg = shootSide === 'left' ? 90 : 270 // base deg
+  const startDeg = baseDeg + 60
+  const degInterval = getIntervalDeg(baseDeg, startDeg, bulletsCount)
+  for (let i = 0; i < bulletsCount; i++) {
+    const degNow = startDeg + i * degInterval
+    const v = getAngleVelocity(degNow, basicV)
+    gameInstance[bulletsProp] = [
+      ...gameInstance[bulletsProp],
+      getNewDirectiveBullet(
+        obj,
+        v.vx,
+        v.vy, 
+        gameInstance.gameNewCloneId + i + 1
+      ), 
+    ]
+  }
+  console.log(gameInstance[bulletsProp])
+  gameInstance.gameNewCloneId += 5
+}
+
+
+
 export class ShootingGame extends Game {
   constructor(canvas, canvasSpec, initGameProp) {
     super(canvas, canvasSpec, initGameProp)
     this.enemyBullets = []
+    this.newGameObjs = []
+    this.buffItems = []
     this.canShootBullet = true
     this.spawnObstacle = setInterval(() => this.spawnObstacleFn(), 3000)
     // this.spawnBossBullets = setInterval(() => this.bossShootBullets(), 1000)
   }
   shootBullet(bulletFn=getNewBullet, obj=myPlayer) {
-    this.newGameObjs = [
-      ...this.newGameObjs,
-      bulletFn(obj.x, obj.y + obj.height / 2, this.gameNewCloneId), 
-    ]
-    this.gameNewCloneId += 1
+    myPlayer.bulletBasicV = 10
+    const shootDefaultBullet = () => {
+      this.newGameObjs = [
+        ...this.newGameObjs,
+        bulletFn(obj.x, obj.y + obj.height / 2, this.gameNewCloneId),
+      ]
+    }
+    //
+    switch (myPlayer.attackType) {
+      case 'default': {
+        shootDefaultBullet()
+        this.gameNewCloneId += 1
+        break
+      }
+      case 'directive': {
+        if(this.gameEnemies.length === 0) {
+          shootDefaultBullet()
+        } else {
+          const enemy = this.gameEnemies.filter(e => e.id !== 'obstacle')[0]
+          this.newGameObjs = [
+            ...this.newGameObjs,
+            spawnDirectiveBullet(myPlayer, enemy, myPlayer.bulletBasicV),
+          ]
+          this.gameNewCloneId += 1
+        }
+        break
+      } 
+      case 'spread': {
+        spawnSpreadBullets(myPlayer, myPlayer.bulletBasicV, 'right', this, 'newGameObjs')
+        break
+      }
+      default:
+        shootDefaultBullet()
+    }
     this.canShootBullet = false
     setTimeout(() => { this.canShootBullet = true }, 300)
     console.log(this.newGameObjs)
@@ -100,7 +164,7 @@ export class ShootingGame extends Game {
             ...this.enemyBullets,
             newBullet, 
           ]
-          setTimeout(() => { newBullet.isMissile = false }, 2000)
+          setTimeout(() => { newBullet.isMissile = false }, 1000)
           this.gameNewCloneId += 1
         }
         //random spawn bullets
@@ -186,6 +250,12 @@ export class ShootingGame extends Game {
     this.drawFPS()
 
     //game rule
+    
+    //remove obj if it is out of bound
+    const checkIsOutOfBounding = (e) => (
+      e.x <= -100 || e.x >= this.canvasSpec.width + 100 ||
+      e.y <= -100 || e.y >= this.canvasSpec.height + 100
+    )
     const removeGameObjs = (objs, _enemy) => {
       this[objs] = this[objs].filter(o => o.cloneId !== _enemy.cloneId)
     }
@@ -195,27 +265,36 @@ export class ShootingGame extends Game {
     }
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
-        if(simpleCheckObjCollide(player, target) && !player.noHurt) {
-          console.log('hit!')
-          this.gameProp = {
-            ...this.gameProp,
-            playerLife: this.gameProp.playerLife - 1,
-          }
-          player.setProp('blinkSpec', {
-            ...player.blinkSpec,
-            useBlink: true,
-          })
-          healthText.setProp('health', this.gameProp.playerLife)
-          player.setProp('health', this.gameProp.playerLife)
-          player.noHurt = true
-          player.endNoHurt()
-          //
-          if(target.type === 'obs') {
-            return false
-          } return true
-        } return false
+      if(simpleCheckObjCollide(player, target) && !player.noHurt) {
+        console.log('hit!')
+        this.gameProp = {
+          ...this.gameProp,
+          playerLife: this.gameProp.playerLife - 1,
+        }
+        player.setProp('blinkSpec', {
+          ...player.blinkSpec,
+          useBlink: true,
+        })
+        healthText.setProp('health', this.gameProp.playerLife)
+        player.setProp('health', this.gameProp.playerLife)
+        //set nohurt  
+        player.noHurt = true
+        player.endNoHurt()
+        //
+        if(target.type === 'obs') {
+          return false
+        } return true
+      } return false
     }
     //
+    this.buffItems.forEach(e => {
+      if(simpleCheckObjCollide(myPlayer, e)) {
+        myPlayer.attackType = e.type
+        removeGameObjs('buffItems', e)
+      } else {
+        e.render(this.ctx)
+      }
+    })
     this.newGameObjs.forEach(e => {
       //remove bullet if it is out of bound
       if(e.x >= this.canvasSpec.width + 100) {
@@ -239,11 +318,6 @@ export class ShootingGame extends Game {
           }
         }
       }
-      //remove enemy if it is out of bound
-      const checkIsOutOfBounding = (e) => (
-        e.x <= -100 || e.x >= this.canvasSpec.width + 100 ||
-        e.y <= -100 || e.y >= this.canvasSpec.height + 100
-      )
       if(checkIsOutOfBounding(e) || checkPlayerHitByTarget(myPlayer, e)) {
         removeGameObjs('enemyBullets', e)
       } else {
@@ -291,12 +365,22 @@ export class ShootingGame extends Game {
               score: typeof(this.gameProp.score) === 'number' ? this.gameProp.score + 100 : 0
             }
             scoreText.setProp('score', this.gameProp.score)
+            //boss
             if(enemy.id === 'boss') {
               this.gameProp.bossFight = false
+            }
+            //spawn buff
+            if(enemy.id === 'enemy03') {
+              this.buffItems = [
+                ...this.buffItems,
+                getNewBuffItem(enemy.x, enemy.y, this.gameNewCloneId)
+              ]
+              this.gameNewCloneId += 1
             }
           }
           removeGameObjs('newGameObjs', OBJ)
         }
+        //
       }
     }
     // this.ctx.closePath()

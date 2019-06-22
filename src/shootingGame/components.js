@@ -14,6 +14,7 @@ import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
 import monster03 from '../images/monster03.png'
 import building from '../images/building.png'
+import buff01 from '../images/buff01.png'
 
 //custom components
 export const myBall = new Ball({ x: 440, y: 40, fillStyle: '#a00' })
@@ -124,6 +125,22 @@ export const getNewObstacle = (x, y, cloneId, rotate=0, zoomRatio=1) => new Basi
   movement: {
     isMove: true,
     vx: -3, 
+    vy: 0,
+  } 
+})
+export const getNewBuffItem = (x, y, cloneId, rotate=0, zoomRatio=1) => new BasicStaticImgObj({
+  id: 'buff',
+  // type: 'directive',
+  type: 'spread',
+  cloneId,
+  x, y,
+  imgSrc: buff01,
+  width: 40,
+  height: 40,
+  rotate, zoomRatio,
+  movement: {
+    isMove: true,
+    vx: -10, 
     vy: 0,
   } 
 })

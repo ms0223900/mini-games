@@ -432,10 +432,13 @@ export class ControllableObj extends BasicStaticImgObj {
       vy: 0,
       moveSet: [],
     }
+    this.attackType = 'default'
+    //
     this.noHurt = false
     this.endNoHurt = () => setTimeout(() => {
       this.noHurt = false
     }, 500)
+    //
     this.moveEvent()
   }
   moveEvent() {
@@ -444,12 +447,16 @@ export class ControllableObj extends BasicStaticImgObj {
     document.addEventListener('keyup', (e) => {
       const { keyCode } = e
       // this.movement.isMove = false
-      this.movement = {
-        ...this.movement,
-        vx: 0,
-        vy: 0,
+      const { moveSet } = this.movement
+      this.movement.moveSet = moveSet.filter(m => m !== keyCode)
+      
+      if(this.movement.moveSet.length === 0) {
+        this.movement = {
+          ...this.movement,
+          vx: 0,
+          vy: 0,
+        }
       }
-      // this.movement.moveSet = this.movement.moveSet.filter(m => m !== e)
     })
   }
   moveByUser(e) {
@@ -457,27 +464,42 @@ export class ControllableObj extends BasicStaticImgObj {
     if([37, 38, 39, 40].includes(keyCode)) {
       this.movement.isMove = true
     }
-    // const getMoveSet = (moveset, keyCode) => {
-    //   if(moveset.includes(keyCode)) {
-    //     return moveset
-    //   } else {
-    //     return [...moveset, keyCode]
-    //   }
-    // }
-    // this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
-    // console.log(this.movement.moveSet)
+    const getMoveSet = (moveset, keyCode) => {
+      if(moveset.includes(keyCode)) {
+        return moveset
+      } else {
+        return [...moveset, keyCode]
+      }
+    }
+    this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
+    console.log(this.movement.moveSet)
     //move by keyCode
-    if(keyCode === 37) {
+    // if(keyCode === 37) {
+    //   this.movement.vy = 0
+    //   this.movement.vx = this.movement.vStandard * -1
+    // } else if(keyCode === 38) {
+    //   this.movement.vx = 0
+    //   this.movement.vy = this.movement.vStandard * -1
+    // } else if(keyCode === 39) {
+    //   this.movement.vy = 0
+    //   this.movement.vx = this.movement.vStandard * 1
+    //   // this.x += 6
+    // } else if(keyCode === 40) {
+    //   this.movement.vx = 0
+    //   this.movement.vy = this.movement.vStandard * 1
+    // }
+
+    if(this.movement.moveSet.includes(37)) {
       this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * -1
-    } else if(keyCode === 38) {
+    } else if(this.movement.moveSet.includes(38)) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * -1
-    } else if(keyCode === 39) {
+    } else if(this.movement.moveSet.includes(39)) {
       this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
       // this.x += 6
-    } else if(keyCode === 40) {
+    } else if(this.movement.moveSet.includes(40)) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
     }
