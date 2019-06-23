@@ -20,6 +20,9 @@ export default () => {
   return (
     <div>
       <canvas 
+        onClick={ 
+          () => { 
+            myGame.current.shootBullet() } }
         style={{ boxShadow: '0px 0px 10px #111'}}
         width={ canvasSpec.width } 
         height={ canvasSpec.height } 

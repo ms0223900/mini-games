@@ -7,9 +7,11 @@ import {
   BasicStaticImgObj,
   ControllableObj,
 } from '../game/gameLib'
-import { getProbability } from '../game/gameFunc'
+import { getProbability, getAngleVelocity } from '../game/gameFunc'
 //images
 import iconImg from '../images/iconImg.png'
+import iconImg02 from '../images/iconImg02.png'
+import iconImg03 from '../images/iconImg03.png'
 import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
 import monster03 from '../images/monster03.png'
@@ -27,7 +29,7 @@ myBall.setProp('movement', {
 
 //
 const newEnemy = ( id='enemy', imgSrc, movement) => (x=300, y=300, cloneId=0, timerAttackFn) => 
-new Enemy({ x, y, id, cloneId, width: 80, height: 80, imgSrc, useWall: false, movement, timerAttackFn })
+new Enemy({ x, y, id, cloneId, type: 'enemy', width: 80, height: 80, imgSrc, useWall: false, movement, timerAttackFn })
 //
 export const boss = (x=700, y=300, cloneId=0, timerAttackFn, id='boss', imgSrc=monster03, movement) => {
   const b = new Enemy({ x, y, id, cloneId, width: 400, height: 400, imgSrc, useWall: false, movement, timerAttackFn, health: 20, }) 
@@ -36,6 +38,7 @@ export const boss = (x=700, y=300, cloneId=0, timerAttackFn, id='boss', imgSrc=m
     default: imgSrc,
     attack: monster02,
   }
+  b.turnDegNow = 0
   return (
     b.setNewMovement((e) => {
       // console.log('call boss move')
@@ -72,7 +75,21 @@ export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0
   const enemies = [enemy01, enemy02, enemy03]
   //enemy spawn probability
   const num = getProbability(enemyPercent) || 0
-  return enemies[num](x, y, cloneId, timerAttackFn)
+  if(num === 1) {
+    return enemies[num](x, y, cloneId, timerAttackFn)
+      .setNewMovement((e) => {
+        const deg = e.turnDegNow
+        const { vx, vy, } = getAngleVelocity(deg, 2)
+        e.movement = {
+          ...e.movement,
+          // vx,
+          vy,
+        }
+        e.turnDegNow += 1.5
+      })
+  } else {
+    return enemies[num](x, y, cloneId, timerAttackFn)
+  }
 }
 
 //
@@ -170,9 +187,14 @@ export const myPlayer = new ControllableObj({
   imgSrc: iconImg,
   x: 100, y: 100,
   width: 100, height: 100,
-  hitbox: { w: 50, h: 50 }
+  hitbox: { w: 50, h: 50 },
+  status: {
+    default: iconImg,
+    directive: iconImg02,
+    spread: iconImg03,
+  },
 })
-
+console.log(myPlayer)
 
 
 console.log(scoreText)

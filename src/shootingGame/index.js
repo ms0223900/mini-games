@@ -97,6 +97,7 @@ export class ShootingGame extends Game {
         break
       } 
       case 'spread': {
+        console.log(myPlayer)
         spawnSpreadBullets(myPlayer, myPlayer.bulletBasicV, 'right', this, 'newGameObjs')
         break
       }
@@ -105,7 +106,7 @@ export class ShootingGame extends Game {
     }
     this.canShootBullet = false
     setTimeout(() => { this.canShootBullet = true }, 300)
-    console.log(this.newGameObjs)
+    // console.log(this.newGameObjs)
   }
   bossShootBullets() {
     if(this.gameProp.bossFight) {
@@ -197,7 +198,7 @@ export class ShootingGame extends Game {
       ...this.gameEnemies,
       boss(700, 300, this.gameNewCloneId, fn),
     ]
-    console.log(this.gameEnemies)
+    // console.log(this.gameEnemies)
     this.gameNewCloneId += 1
   }
   spawnEnemyFn() {
@@ -223,7 +224,7 @@ export class ShootingGame extends Game {
         this.gameNewCloneId += 1
       }
   
-      console.log(this.gameEnemies)
+      // console.log(this.gameEnemies)
       const randomPos = {
         x: this.canvasSpec.width + 30,
         y: Math.round( Math.random() * (this.canvasSpec.height - 82) ),
@@ -266,7 +267,7 @@ export class ShootingGame extends Game {
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
       if(simpleCheckObjCollide(player, target) && !player.noHurt) {
-        console.log('hit!')
+        // console.log('hit!')
         this.gameProp = {
           ...this.gameProp,
           playerLife: this.gameProp.playerLife - 1,
@@ -289,7 +290,12 @@ export class ShootingGame extends Game {
     //
     this.buffItems.forEach(e => {
       if(simpleCheckObjCollide(myPlayer, e)) {
+        //set player status
         myPlayer.attackType = e.type
+        myPlayer.statusNow = e.type
+        myPlayer.timeLimitBuff.buff = 'attack'
+        myPlayer.timeLimitBuff.buffTime = 4
+        // console.log(myPlayer)
         removeGameObjs('buffItems', e)
       } else {
         e.render(this.ctx)

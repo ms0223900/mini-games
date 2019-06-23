@@ -175,7 +175,7 @@ export class BasicStaticImgObj extends BasicObj {
     super(props)
     this.opacity = opacity
     this.statusNow = 'default'
-    this.status = {
+    this.status = status || {
       default: imgSrc,
     }
     this.imgSrc = imgSrc
@@ -206,6 +206,7 @@ export class BasicStaticImgObj extends BasicObj {
 export class Enemy extends BasicStaticImgObj {
   constructor({ timerAttackFn=() => console.log('attack'), attackTime=1300, ...props }) {
     super(props)
+    this.turnDegNow = 0
     this.timerAttack = setInterval(() => {
       timerAttackFn(this)
       this.statusNow = this.status.attack ? 'attack' : 'default'
@@ -439,6 +440,21 @@ export class ControllableObj extends BasicStaticImgObj {
       this.noHurt = false
     }, 500)
     //
+    this.timeLimitBuff = {
+      buffTime: 0,
+      buff: false,
+    }
+    this.checkLimitBuff = setInterval(() => {
+      const { buffTime, buff } = this.timeLimitBuff
+      if(buffTime > 0) {
+        this.timeLimitBuff.buffTime -= 1
+      }
+      if(buff && this.timeLimitBuff.buffTime === 0) {
+        this.timeLimitBuff.buff = false
+        this.attackType = 'default'
+        this.statusNow = 'default'
+      }
+    }, 1000)
     this.moveEvent()
   }
   moveEvent() {
@@ -472,7 +488,7 @@ export class ControllableObj extends BasicStaticImgObj {
       }
     }
     this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
-    console.log(this.movement.moveSet)
+    // console.log(this.movement.moveSet)
     //move by keyCode
     // if(keyCode === 37) {
     //   this.movement.vy = 0
