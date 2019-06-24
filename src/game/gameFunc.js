@@ -330,11 +330,17 @@ export const getUnitVector = (p1, p2) => {
   return [ vector[0] / length, vector[1] / length ]
 }
 
-export const getVelocity = (p1, p2, v) => ({
-  vx: v * getUnitVector(p1, p2)[0],
-  vy: v * getUnitVector(p1, p2)[1],
-})
-
+export const getVelocity = (p1, p2, v) => {
+  const vx = v * getUnitVector(p1, p2)[0]
+  const vy = v * getUnitVector(p1, p2)[1]
+  const deg = 180 + Math.asin( (-vy / Math.sqrt(vx * vx + vy * vy))) * 180 / Math.PI //angle axis is different from canvas axis
+  // console.log(deg)
+  return ({
+    vx,
+    vy,
+    deg,
+  })
+}
 export const getAngleVelocity = (deg, v) => ({
   vx: v * Math.cos(deg * Math.PI / 180),
   vy: v * Math.sin(deg * Math.PI / 180),

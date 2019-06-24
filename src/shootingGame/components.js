@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import {  
-  BasicObj,
+  // BasicObj,
   Enemy,
   Ball,
   BasicText,
@@ -8,13 +8,19 @@ import {
   ControllableObj,
 } from '../game/gameLib'
 import { getProbability, getAngleVelocity } from '../game/gameFunc'
-//images
-import iconImg from '../images/iconImg.png'
-import iconImg02 from '../images/iconImg02.png'
-import iconImg03 from '../images/iconImg03.png'
+//player
+import iconImg from '../images/chick_190624-02.png'
+import iconImg02 from '../images/chick_190624-01.png'
+import iconImg03 from '../images/iconImg-03.png'
+//bullets
+import bullet01 from '../images/chick_190624-04.png'
+import bullet02 from '../images/chick_190624-03.png'
+import bullet03 from '../images/chick_190624-05.png'
+//
 import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
 import monster03 from '../images/monster03.png'
+//
 import building from '../images/building.png'
 import buff01 from '../images/buff01.png'
 
@@ -92,32 +98,62 @@ export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0
   }
 }
 
-//
-export const getNewBullet = (x=0, y=0, newCloneId=0, id='bullet') => new Ball({ 
+//default ball bullet
+// export const getNewBullet = (x=0, y=0, newCloneId=0, id='bullet') => new Ball({ 
+//   id, 
+//   cloneId: newCloneId, 
+//   x, y, 
+//   r: 10,
+//   fillStyle: '#f010ad', 
+//   movement: {
+//     isMove: true,
+//     vx: 10, 
+//     vy: 0,
+//   } 
+// })
+export const getNewBullet = (x=0, y=0, newCloneId=0, id='bullet') => new BasicStaticImgObj({ 
   id, 
   cloneId: newCloneId, 
   x, y, 
-  r: 10,
-  fillStyle: '#f010ad', 
+  width: 60, height: 20,
+  imgSrc: bullet01,
+  rotate: 20,
   movement: {
     isMove: true,
     vx: 10, 
     vy: 0,
   } 
 })
-export const getNewDirectiveBullet = (obj, vx, vy, newCloneId=0, id='directive') => new Ball({ 
+
+// export const getNewDirectiveBullet = (obj, vx, vy, newCloneId=0, id='directive') => new Ball({ 
+//   id, 
+//   cloneId: newCloneId, 
+//   x: obj.x + obj.width / 2, 
+//   y: obj.y + obj.height / 2, 
+//   r: 10,
+//   fillStyle: id === 'missile' ? '#00a' : '#0a0', 
+//   movement: {
+//     isMove: true,
+//     vx, 
+//     vy,
+//   } 
+// })
+export const getNewDirectiveBullet = (obj, vx, vy, newCloneId=0, id='directive', rotate) => new BasicStaticImgObj({ 
   id, 
   cloneId: newCloneId, 
   x: obj.x + obj.width / 2, 
   y: obj.y + obj.height / 2, 
-  r: 10,
-  fillStyle: id === 'missile' ? '#00a' : '#0a0', 
+  width: 70, height: 10,
+  imgSrc: bullet02,
+  rotate,
   movement: {
     isMove: true,
     vx, 
     vy,
   } 
 })
+
+
 export const getNewEnemyBullet = (x=0, y=0, newCloneId=0) => new Ball({ 
   id: 'bulletEnemy', 
   cloneId: newCloneId, 
@@ -186,12 +222,12 @@ export const myPlayer = new ControllableObj({
   // fillStyle: '#a0a',
   imgSrc: iconImg,
   x: 100, y: 100,
-  width: 100, height: 100,
+  width: 90, height: 100,
   hitbox: { w: 50, h: 50 },
   status: {
     default: iconImg,
-    directive: iconImg02,
-    spread: iconImg03,
+    directive: iconImg03,
+    spread: iconImg02,
   },
 })
 console.log(myPlayer)

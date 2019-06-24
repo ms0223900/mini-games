@@ -30,7 +30,7 @@ import { getProbability } from '../game/gameFunc'
 const spawnDirectiveBullet = (obj1, obj2, basicV, cloneId) => {
   const v = getVelocity(obj1, obj2, basicV)
   return getNewDirectiveBullet(
-    obj1,v.vx,v.vy, cloneId,
+    obj1,v.vx,v.vy, cloneId, 'directive', v.deg
   )
 }
 //multi spread bullets
@@ -48,7 +48,9 @@ const spawnSpreadBullets = (obj, basicV, shootSide='left', gameInstance, bullets
         obj,
         v.vx,
         v.vy, 
-        gameInstance.gameNewCloneId + i + 1
+        gameInstance.gameNewCloneId + i,
+        'directive',
+        degNow,
       ), 
     ]
   }
@@ -124,7 +126,9 @@ export class ShootingGame extends Game {
               obj,
               v.vx,
               v.vy, 
-              this.gameNewCloneId
+              this.gameNewCloneId,
+              'directive',
+              v.deg,
             ), 
           ]
           this.gameNewCloneId += 1
@@ -143,7 +147,9 @@ export class ShootingGame extends Game {
                 obj,
                 v.vx,
                 v.vy, 
-                this.gameNewCloneId + i + 1
+                this.gameNewCloneId + i,
+                'directive',
+                degNow,
               ), 
             ]
           }
@@ -170,7 +176,7 @@ export class ShootingGame extends Game {
         }
         //random spawn bullets
         const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet]
-        const bulletProbability = [0.2, 0.1, 0.7] //maybe differ from different boss
+        const bulletProbability = [0.7, 0.3, 0] //maybe differ from different boss
         const bulletRand = getProbability(bulletProbability)
         bulletFns[bulletRand]()
       }

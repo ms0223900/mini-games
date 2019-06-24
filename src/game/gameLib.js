@@ -155,6 +155,8 @@ export class BasicObj {
     ctx.save()
     ctx.beginPath()
     ctx.globalAlpha = this.opacity
+    //translate canvas center
+    ctx.translate(this.x, this.y)
     ctx.rotate(this.rotate * Math.PI / 180)
     if(this.blinkSpec.useBlink) {
       this.blinkEffect(ctx)
@@ -188,14 +190,15 @@ export class BasicStaticImgObj extends BasicObj {
     const imgNow = this.status[statusNow]
     // if(this.bounceStart) { this.bounceLoop() }
     this.image.src = imgNow
-    ctx.save()
+    ctx.save()                              
     ctx.drawImage(
       this.image, 
-      this.x, 
-      this.y, 
+      0, //due to translate
+      0, 
       this.width, 
       this.height
     )
+    
     if(this.dev) {
       ctx.fillRect(x, y, w, h)
     }
@@ -343,7 +346,7 @@ export class Ball extends BasicObj {
     ctx.save()
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
-    ctx.arc(this.x + this.r, this.y + this.r, this.r, 0, Math.PI * 2)
+    ctx.arc(0 + this.r, 0 + this.r, this.r, 0, Math.PI * 2)
     ctx.stroke()
     ctx.fill()
     ctx.restore()
