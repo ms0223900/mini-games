@@ -15,6 +15,8 @@ import {
   scoreText,
   healthText,
   levelText,
+  heart,
+  coin,
 } from './components'
 import {  
   simpleCheckObjCollide,
@@ -23,9 +25,23 @@ import {
   getIntervalDeg,
 } from '../game/gameFunc'
 import { levelConfig } from './levelConfig'
-import { getProbability } from '../game/gameFunc'
+import { 
+  getProbability,
+  getSingleProbability, 
+  getSpreadObjs,
+} from '../game/gameFunc'
 import { spawnEnemy } from './enemies'
 import { shootBullet } from './player'
+
+const spawnObj = (gameInstance, originObjs, newObj) => {
+  gameInstance[originObjs] = [
+    ...gameInstance.buffItems,
+    newObj
+  ]
+  gameInstance.gameNewCloneId += 1
+}
+
+
 
 
 
@@ -207,14 +223,30 @@ export class ShootingGame extends Game {
     //
     this.buffItems.forEach(e => {
       if(simpleCheckObjCollide(myPlayer, e)) {
-        //set player status
-        myPlayer.attackType = e.type
-        myPlayer.statusNow = e.type
-        myPlayer.timeLimitBuff.buff = 'attack'
-        myPlayer.timeLimitBuff.buffTime = 4
-        // console.log(myPlayer)
+        switch (e.id) {
+          case 'buff': {
+            //set player status
+            myPlayer.attackType = e.type
+            myPlayer.statusNow = e.type
+            myPlayer.timeLimitBuff.buff = 'attack'
+            myPlayer.timeLimitBuff.buffTime = 4
+            break
+          }
+          case 'heart': {
+            this.updateGameProp('playerLife', this.gameProp.playerLife + 1)
+            // console.log(myPlayer)
+            break
+          }
+          default:
+            break;
+        }
         removeGameObjs('buffItems', e)
       } else {
+        if(e.id === 'coin') {
+          const v = getVelocity(e, myPlayer, 12)
+          e.movement.vx = v.vx
+          e.movement.vy = v.vy
+        }
         e.render(this.ctx)
       }
     })
@@ -290,12 +322,18 @@ export class ShootingGame extends Game {
             }
             //spawn buff
             if(enemy.id === 'enemy03') {
-              this.buffItems = [
-                ...this.buffItems,
-                getNewBuffItem(enemy.x, enemy.y, this.gameNewCloneId)
-              ]
-              this.gameNewCloneId += 1
+              const newBuff = getNewBuffItem(enemy.x, enemy.y, this.gameNewCloneId)
+              spawnObj(this, 'buffItems', newBuff)
             }
+            if(getSingleProbability(0.1)) {
+              const newHeart = heart(enemy.x, enemy.y, this.gameNewCloneId)
+              spawnObj(this, 'buffItems', newHeart)
+            }
+            //money
+            getSpreadObjs(enemy, 60, 6).forEach(obj => {
+              const newCoin = coin(obj.x, obj.y, this.gameNewCloneId)
+              spawnObj(this, 'buffItems', newCoin)
+            })
           }
           removeGameObjs('newGameObjs', OBJ)
         }

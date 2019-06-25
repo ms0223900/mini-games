@@ -23,14 +23,31 @@ import monster03 from '../images/monster03.png'
 //
 import building from '../images/building.png'
 import buff01 from '../images/buff01.png'
+import heartImg from '../images/heart-icon.png'
+import coinImg from '../images/coin-icon.png'
 
 //custom components
-export const myBall = new Ball({ x: 440, y: 40, fillStyle: '#a00' })
-myBall.setProp('movement', {
-  ...myBall.movement,
-  isMove: false,
-  vx: -10,
-  vy: 10,
+export const heart = (x, y, cloneId) => new BasicStaticImgObj({
+  id: 'heart', cloneId,
+  x, y, 
+  width: 40, height: 40,
+  imgSrc: heartImg,
+  movement: {
+    isMove: true,
+    vx: -4,
+    vy: 0,
+  }
+})
+export const coin = (x, y, cloneId) => new BasicStaticImgObj({
+  id: 'coin', cloneId,
+  x, y, 
+  width: 20, height: 20,
+  imgSrc: coinImg,
+  movement: {
+    isMove: true,
+    vx: -4,
+    vy: 0,
+  }
 })
 
 //

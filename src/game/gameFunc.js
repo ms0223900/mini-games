@@ -363,3 +363,22 @@ export const getProbability = (percentArr) => {
     }
   }
 }
+
+export const getSingleProbability = (percent=0.5) => { //from 0 ~ percent
+  const rand = Math.round(Math.random() * 100) / 100
+  if(rand >= 0 && rand <= percent) {
+    return true
+  } return false
+}
+
+export const getSpreadObjs = (center, r, amount=3) => {
+  const degInterval = 360 / amount
+  const res = []
+  for (let i = 0; i < amount; i++) {
+    res[i] = {
+      x: center.x + Math.cos(degInterval * i * Math.PI / 180) * r,
+      y: center.y + Math.sin(degInterval * i * Math.PI / 180) * r,
+    }
+  }
+  return res
+}
