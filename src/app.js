@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useEffect } from 'react'
 import { MyGame } from './shootingGame'
 import { canvasSpec } from './config'
+import { shootBullet } from './shootingGame/player'
 
 export default () => {
   const thisCanvas = useRef()
@@ -22,7 +23,7 @@ export default () => {
       <canvas 
         onClick={ 
           () => { 
-            myGame.current.shootBullet() } }
+            shootBullet(myGame.current) } }
         style={{ boxShadow: '0px 0px 10px #111'}}
         width={ canvasSpec.width } 
         height={ canvasSpec.height } 
