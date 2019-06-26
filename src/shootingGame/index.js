@@ -17,6 +17,7 @@ import {
   levelText,
   heart,
   coin,
+  loopBack,
 } from './components'
 import {  
   simpleCheckObjCollide,
@@ -295,6 +296,7 @@ export class ShootingGame extends Game {
     scoreText.render(this.ctx)
     healthText.render(this.ctx)
     levelText.render(this.ctx)
+    loopBack.render(this.ctx)
     //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
       const OBJ = this.newGameObjs[i]

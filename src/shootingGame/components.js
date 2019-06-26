@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { canvasSpec } from '../config'
 import {  
   // BasicObj,
   Enemy,
@@ -21,12 +22,50 @@ import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
 import monster03 from '../images/monster03.png'
 //
+import ground from '../images/ground.png'
 import building from '../images/building.png'
 import buff01 from '../images/buff01.png'
 import heartImg from '../images/heart-icon.png'
 import coinImg from '../images/coin-icon.png'
 
 //custom components
+const backGround = () => {
+  const amountOfImg = canvasSpec.width / 40 + 1 //image width is 40
+  const images = [...Array(amountOfImg).keys()].map(i => (
+    new BasicStaticImgObj({
+      id: 'ground',
+      x: i * 40, y: canvasSpec.height - 30,
+      width: 40, height: 128,
+      imgSrc: ground,
+      movement: {
+        isMove: true,
+        vx: -5,
+        vy: 0,
+      }
+    })
+  ))
+  return ({
+    position: 0,
+    updatePosition() {
+      if(this.position === -40) {
+        images.forEach(image => {
+          image.x += 40
+        })
+        this.position = 0
+      }
+    },
+    render(ctx) {
+      this.updatePosition()
+      images.forEach(image => {
+        image.render(ctx)
+      })
+      this.position -= 5
+    }
+  })
+}
+export const loopBack = backGround() 
+
+
 export const heart = (x, y, cloneId) => new BasicStaticImgObj({
   id: 'heart', cloneId,
   x, y, 
