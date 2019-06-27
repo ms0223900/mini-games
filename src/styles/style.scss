@@ -1,0 +1,40 @@
+img {
+  display: inline-block;
+  width: 100%;
+}
+#UI {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 300px;
+  height: 300px;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0px 0px 10px #aaa; 
+  // display: none;
+  // .hi {
+  //   background-color: #a00;
+  // }
+  .ui-container {
+    // display: flex;
+    .image-container {
+      display: inline-block;
+      width: 100px;
+      // height: 100px;
+      padding: 10px;
+      box-sizing: border-box;
+      transition: .2s;
+      &:hover {
+        background-color: #ddd;
+        transition: .2s;
+      }
+      img {
+        // width: auto;
+        height: 100%;
+      }
+    }
+  }
+}

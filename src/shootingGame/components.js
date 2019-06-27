@@ -271,6 +271,7 @@ export const numericText = (x, y, fillStyle, prop=0, value=0) => {
 export const scoreText = numericText(800, 20, '#1a0', 'score', 0)
 export const healthText = numericText(100, 20, '#a00', 'health', 10)
 export const levelText = numericText(900, 20, '#111', 'level', 1)
+export const coinText = numericText(700, 20, '#fa0', 'coin', 0)
 
 //
 

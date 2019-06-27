@@ -15,6 +15,7 @@ import {
   scoreText,
   healthText,
   levelText,
+  coinText,
   heart,
   coin,
   loopBack,
@@ -25,7 +26,10 @@ import {
   getAngleVelocity,
   getIntervalDeg,
 } from '../game/gameFunc'
-import { levelConfig } from './levelConfig'
+import { 
+  levelConfig,
+  uiImages, 
+} from './levelConfig'
 import { 
   getProbability,
   getSingleProbability, 
@@ -42,6 +46,44 @@ const spawnObj = (gameInstance, originObjs, newObj) => {
   gameInstance.gameNewCloneId += 1
 }
 
+let UI
+
+window.onload = () => {
+  UI = document.getElementById('UI')
+  // setUI()
+  console.log(UI)
+}
+//set UI
+export const setUI = (buyItemFn=() => window.alert('a'), setGameContinueFn) => {
+  UI.style.display = 'block'
+  const newContainer = document.getElementsByClassName('ui-container')[0]
+  while(newContainer.firstChild) {
+    newContainer.removeChild(newContainer.firstChild)
+  }
+  // newContainer.setAttribute('class', 'ui-container')
+  //
+  for (let i = 0; i < uiImages.length; i++) {
+    const image = uiImages[i]
+    const newImageContainer = document.createElement('div')
+    newImageContainer.setAttribute('class', 'image-container')
+    const imageEl = document.createElement('img')
+    imageEl.setAttribute('src', image)
+    const title = document.createElement('h3')
+    title.textContent = 'default...'
+    newImageContainer.appendChild(imageEl)
+    newImageContainer.appendChild(title)
+    newContainer.appendChild(newImageContainer)
+    // document.getElementsByClassName('image-container')[i].onclick = () => window.alert('aa')
+  }
+  const imageContainers = document.getElementsByClassName('image-container')
+  for (const el of imageContainers) {
+    el.addEventListener('click', buyItemFn)
+  }
+  document.getElementById('continueBTN').addEventListener('click', () => {
+    setGameContinueFn()
+    UI.style.display = 'none'
+  })
+}
 
 
 
@@ -223,6 +265,7 @@ export class ShootingGame extends Game {
     }
     //
     this.buffItems.forEach(e => {
+      //if collide with player
       if(simpleCheckObjCollide(myPlayer, e)) {
         switch (e.id) {
           case 'buff': {
@@ -236,6 +279,10 @@ export class ShootingGame extends Game {
           case 'heart': {
             this.updateGameProp('playerLife', this.gameProp.playerLife + 1)
             // console.log(myPlayer)
+            break
+          }
+          case 'coin': {
+            this.updateGameProp('coin', this.gameProp.coin + 10)
             break
           }
           default:
@@ -296,7 +343,9 @@ export class ShootingGame extends Game {
     scoreText.render(this.ctx)
     healthText.render(this.ctx)
     levelText.render(this.ctx)
+    coinText.render(this.ctx)
     loopBack.render(this.ctx)
+    //
     //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
       const OBJ = this.newGameObjs[i]
@@ -318,9 +367,23 @@ export class ShootingGame extends Game {
             removeGameObjs('gameEnemies', enemy)
             //update score
             this.updateGameProp('score', this.gameProp.score + 100)
-            //boss
+            //boss is defeated
             if(enemy.id === 'boss') {
               this.gameProp.bossFight = false
+              //update level
+              this.gameProp.level += 1
+              levelText.setProp('level', levelConfig[this.gameProp.level].level)
+              this.gameProp.enemyAmountInThisLevel = 0
+              //pause the game //when boss is die and level value is 1 
+              if(this.gameProp.level === 1) {
+                //all objects remained on screen clear?
+                this.gameProp.isPause = true
+                //popup UI
+                setUI(() => { window.alert('hi') }, () => {
+                  this.gameProp.isPause = false
+                  this.render()
+                })
+              }
             }
             //spawn buff
             if(enemy.id === 'enemy03') {
@@ -345,7 +408,10 @@ export class ShootingGame extends Game {
     // this.ctx.closePath()
 
     //animation
-    requestAnimationFrame( this.render.bind(this) )
+    console.log('game here', this.gameProp.isPause)
+    if(!this.gameProp.isPause) {
+      requestAnimationFrame( this.render.bind(this) )
+    }
     // if(this.gameProp.playerLife <= 0) {
     //   window.alert('you die~')
     //   clearInterval(this.spawnEnemy)
@@ -358,9 +424,11 @@ export class ShootingGame extends Game {
 const initGameProp = {
   level: 0, // array seq, display is level 1
   score: 0,
+  coin: 0,
   playerLife: 10,
   enemyAmountInThisLevel: 0,
   bossFight: false,
+  isPause: false,
 }
 
 export const MyGame = (canvas, canvasSpec) => {
@@ -370,5 +438,6 @@ export const MyGame = (canvas, canvasSpec) => {
     .addPropToSync(myPlayer, 'health', 'playerLife')
     .addPropToSync(scoreText, 'score', 'score')
     .addPropToSync(levelText, 'level', 'level')
+    .addPropToSync(coinText, 'coin', 'coin')
   return game
 }
