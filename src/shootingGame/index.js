@@ -46,8 +46,8 @@ const spawnObj = (gameInstance, originObjs, newObj) => {
   gameInstance.gameNewCloneId += 1
 }
 
+//
 let UI
-
 window.onload = () => {
   UI = document.getElementById('UI')
   // setUI()
@@ -228,6 +228,9 @@ export class ShootingGame extends Game {
       gameObj.obj.setProp(gameObj.objProp, value)
     })
   }
+  eliminateEnemy() {
+    
+  }
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
     //
@@ -248,6 +251,10 @@ export class ShootingGame extends Game {
     const enemyHealthUpdate = (enemy, minusHp=2) => {
       enemy.setProp('health', enemy.health - minusHp)
       enemy.checkIsAlive && enemy.checkIsAlive()
+    }
+    const eleminateEnemy = (e) => {
+      removeGameObjs('gameEnemies', e)
+      enemyHealthUpdate(e, 10000)
     }
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
@@ -337,8 +344,7 @@ export class ShootingGame extends Game {
     this.gameEnemies.forEach(e => {
       //remove enemy if it is out of bound
       if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
-        removeGameObjs('gameEnemies', e)
-        enemyHealthUpdate(e, 10000)
+        eleminateEnemy(e)
       } else {
         e.render(this.ctx)
       }
@@ -381,53 +387,8 @@ export class ShootingGame extends Game {
               this.gameProp.enemyAmountInThisLevel = 0
               //pause the game //when boss is die and level value is 1 
               if(this.gameProp.level === 1) {
-                //all objects remained on screen clear?
-                this.gameEnemies.forEach(e => {
-                  removeGameObjs('gameEnemies', e)
-                  enemyHealthUpdate(e, 10000)
-                })
-                this.newGameObjs = []
-                this.buffItems = []
-                this.gameProp.isPause = true
-                clearInterval(this.spawnEnemy)
-                //popup UI
-                // buyItemFunctions
-                const checkCoinIsEnough = (price, fn) => () => {
-                  if(this.gameProp.coin >= price) {
-                    this.updateGameProp('coin', this.gameProp.coin - price)
-                    fn()
-                    //refresh coin text
-                    setUIcoinNow(this.gameProp.coin)
-                  } else {
-                    window.alert('your coins is not enough~')
-                  }
-                }
-                const prices = [50, 30, 40] //upgrade prices
-                const playerLifeUpLimit = () => {
-                  this.gameProp.playerLifeLimit += 1
-                  this.updateGameProp('playerLife', this.gameProp.playerLifeLimit)
-                  window.alert('Your life limit now is: ' + this.gameProp.playerLifeLimit)
-                }
-                const bulletsSpeedUp = () => {
-                  myPlayer.attackFrequency -= 100 //minus 100ms
-                  window.alert('Your attack speed is up!')
-                }
-                const playerSpeedUp = () => {
-                  myPlayer.movement.vStandard += 1
-                  window.alert('Your move is faster!')
-                }
-                const buyFns = [
-                  playerLifeUpLimit,
-                  bulletsSpeedUp,
-                  playerSpeedUp,
-                ].map((fn, i) => checkCoinIsEnough(prices[i], fn))
-                //
-                const continueGame = () => {
-                  this.gameProp.isPause = false
-                  this.render()
-                  this.spawnEnemy = this.spawnEnemyInterval()
-                }
-                setUI(buyFns, prices, continueGame, this.gameProp.coin)
+                //////
+                popUpShopUI(this, eleminateEnemy)
               }
             }
             //
@@ -467,6 +428,56 @@ export class ShootingGame extends Game {
     
   }
 }
+
+const popUpShopUI = (gameInstance, removeEnemiesFn) => {
+  //all objects remained on screen clear?
+  gameInstance.gameEnemies.forEach(e => {
+    removeEnemiesFn(e)
+  })
+  gameInstance.newGameObjs = []
+  gameInstance.buffItems = []
+  gameInstance.gameProp.isPause = true
+  clearInterval(gameInstance.spawnEnemy)
+  //popup UI
+  // buyItemFunctions
+  const checkCoinIsEnough = (price, fn) => () => {
+    if(gameInstance.gameProp.coin >= price) {
+      gameInstance.updateGameProp('coin', gameInstance.gameProp.coin - price)
+      fn()
+      //refresh coin text
+      setUIcoinNow(gameInstance.gameProp.coin)
+    } else {
+      window.alert('your coins is not enough~')
+    }
+  }
+  const prices = [50, 30, 40] //upgrade prices
+  const playerLifeUpLimit = () => {
+    gameInstance.gameProp.playerLifeLimit += 1
+    gameInstance.updateGameProp('playerLife', gameInstance.gameProp.playerLifeLimit)
+    window.alert('Your life limit now is: ' + gameInstance.gameProp.playerLifeLimit)
+  }
+  const bulletsSpeedUp = () => {
+    myPlayer.attackFrequency -= 100 //minus 100ms
+    window.alert('Your attack speed is up!')
+  }
+  const playerSpeedUp = () => {
+    myPlayer.movement.vStandard += 1
+    window.alert('Your move is faster!')
+  }
+  const buyFns = [
+    playerLifeUpLimit,
+    bulletsSpeedUp,
+    playerSpeedUp,
+  ].map((fn, i) => checkCoinIsEnough(prices[i], fn))
+  //
+  const continueGame = () => {
+    gameInstance.gameProp.isPause = false
+    gameInstance.render()
+    gameInstance.spawnEnemy = gameInstance.spawnEnemyInterval()
+  }
+  setUI(buyFns, prices, continueGame, gameInstance.gameProp.coin)
+}
+
 const initGameProp = {
   level: 0, // array seq, display is level 1
   score: 0,
