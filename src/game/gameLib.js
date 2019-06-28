@@ -5,6 +5,7 @@ import {
   checkMoveObjCollideWithObj ,
   simpleCheckObjCollide,
 } from './gameFunc'
+import { spawnEnemyFrequency } from '../shootingGame/levelConfig'
 import { canvasSpec } from '../config'
 //
 
@@ -549,8 +550,9 @@ export class Game {
     //
     this.newGameObjs = []
     this.gameEnemies = []
-    this.spawnEnemyRate = 500
-    this.spawnEnemy = setInterval(() => this.spawnEnemyFn(), this.spawnEnemyRate)
+    this.spawnEnemyRate = spawnEnemyFrequency
+    this.spawnEnemyInterval = () => setInterval(() => this.spawnEnemyFn(), this.spawnEnemyRate)
+    this.spawnEnemy = this.spawnEnemyInterval()
     document.addEventListener('keydown', (e) => this.newGameEvent(e))
   }
   setGameProp(prop, value) {

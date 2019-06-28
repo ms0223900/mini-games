@@ -275,18 +275,23 @@ export const coinText = numericText(700, 20, '#fa0', 'coin', 0)
 
 //
 
-export const myPlayer = new ControllableObj({
-  // fillStyle: '#a0a',
-  imgSrc: iconImg,
-  x: 100, y: 100,
-  width: 90, height: 100,
-  hitbox: { w: 50, h: 50 },
-  status: {
-    default: iconImg,
-    directive: iconImg03,
-    spread: iconImg02,
-  },
-})
+export const player = () => {
+  const obj = new ControllableObj({
+    // fillStyle: '#a0a',
+    imgSrc: iconImg,
+    x: 100, y: 300,
+    width: 90, height: 100,
+    hitbox: { w: 50, h: 50 },
+    status: {
+      default: iconImg,
+      directive: iconImg03,
+      spread: iconImg02,
+    },
+  })
+  obj.attackFrequency = 600 //every 600ms can attack
+  return obj
+} 
+export const myPlayer = player()
 console.log(myPlayer)
 
 

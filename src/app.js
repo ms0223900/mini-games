@@ -24,6 +24,7 @@ export default () => {
     <div style={{ width: canvasSpec.width, height: canvasSpec.height, position: 'relative', }}>
       <div id='UI' style={{ display: uiDisplay, }}>
         <button onClick={ () => setDisplay('none') }>Close</button>
+        <h3 id={ 'coinNow' }></h3>
         <div className={ 'ui-container' }></div>
         <button id={ 'continueBTN' }>{ 'CONTINUE' }</button>
       </div>

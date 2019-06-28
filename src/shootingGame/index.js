@@ -54,9 +54,13 @@ window.onload = () => {
   console.log(UI)
 }
 //set UI
-export const setUI = (buyItemFn=() => window.alert('a'), setGameContinueFn) => {
+const setUIcoinNow = (coinNow) => {
+  document.getElementById('coinNow').innerText = coinNow
+}
+export const setUI = (buyItemFn, itemPrices, setGameContinueFn, coinNow) => {
   UI.style.display = 'block'
   const newContainer = document.getElementsByClassName('ui-container')[0]
+  setUIcoinNow(coinNow)
   while(newContainer.firstChild) {
     newContainer.removeChild(newContainer.firstChild)
   }
@@ -69,15 +73,16 @@ export const setUI = (buyItemFn=() => window.alert('a'), setGameContinueFn) => {
     const imageEl = document.createElement('img')
     imageEl.setAttribute('src', image)
     const title = document.createElement('h3')
-    title.textContent = 'default...'
+    title.textContent = `$ ${ itemPrices[i] }`
     newImageContainer.appendChild(imageEl)
     newImageContainer.appendChild(title)
     newContainer.appendChild(newImageContainer)
     // document.getElementsByClassName('image-container')[i].onclick = () => window.alert('aa')
   }
   const imageContainers = document.getElementsByClassName('image-container')
-  for (const el of imageContainers) {
-    el.addEventListener('click', buyItemFn)
+  for (let i = 0; i < imageContainers.length; i++) {
+    const el = imageContainers[i]
+    el.addEventListener('click', buyItemFn[i])
   }
   document.getElementById('continueBTN').addEventListener('click', () => {
     setGameContinueFn()
@@ -377,14 +382,55 @@ export class ShootingGame extends Game {
               //pause the game //when boss is die and level value is 1 
               if(this.gameProp.level === 1) {
                 //all objects remained on screen clear?
+                this.gameEnemies.forEach(e => {
+                  removeGameObjs('gameEnemies', e)
+                  enemyHealthUpdate(e, 10000)
+                })
+                this.newGameObjs = []
+                this.buffItems = []
                 this.gameProp.isPause = true
+                clearInterval(this.spawnEnemy)
                 //popup UI
-                setUI(() => { window.alert('hi') }, () => {
+                // buyItemFunctions
+                const checkCoinIsEnough = (price, fn) => () => {
+                  if(this.gameProp.coin >= price) {
+                    this.updateGameProp('coin', this.gameProp.coin - price)
+                    fn()
+                    //refresh coin text
+                    setUIcoinNow(this.gameProp.coin)
+                  } else {
+                    window.alert('your coins is not enough~')
+                  }
+                }
+                const prices = [50, 30, 40] //upgrade prices
+                const playerLifeUpLimit = () => {
+                  this.gameProp.playerLifeLimit += 1
+                  this.updateGameProp('playerLife', this.gameProp.playerLifeLimit)
+                  window.alert('Your life limit now is: ' + this.gameProp.playerLifeLimit)
+                }
+                const bulletsSpeedUp = () => {
+                  myPlayer.attackFrequency -= 100 //minus 100ms
+                  window.alert('Your attack speed is up!')
+                }
+                const playerSpeedUp = () => {
+                  myPlayer.movement.vStandard += 1
+                  window.alert('Your move is faster!')
+                }
+                const buyFns = [
+                  playerLifeUpLimit,
+                  bulletsSpeedUp,
+                  playerSpeedUp,
+                ].map((fn, i) => checkCoinIsEnough(prices[i], fn))
+                //
+                const continueGame = () => {
                   this.gameProp.isPause = false
                   this.render()
-                })
+                  this.spawnEnemy = this.spawnEnemyInterval()
+                }
+                setUI(buyFns, prices, continueGame, this.gameProp.coin)
               }
             }
+            //
             //spawn buff
             if(enemy.id === 'enemy03') {
               const newBuff = getNewBuffItem(enemy.x, enemy.y, this.gameNewCloneId)
@@ -408,7 +454,7 @@ export class ShootingGame extends Game {
     // this.ctx.closePath()
 
     //animation
-    console.log('game here', this.gameProp.isPause)
+    console.log(this.gameEnemies)
     if(!this.gameProp.isPause) {
       requestAnimationFrame( this.render.bind(this) )
     }
@@ -426,6 +472,7 @@ const initGameProp = {
   score: 0,
   coin: 0,
   playerLife: 10,
+  playerLifeLimit: 10,
   enemyAmountInThisLevel: 0,
   bossFight: false,
   isPause: false,

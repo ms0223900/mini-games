@@ -26,3 +26,4 @@ export const uiImages = [
   'https://image.shutterstock.com/image-vector/weapon-focus-plus-sign-denoting-600w-1151810723.jpg',
   'https://cdn4.iconfinder.com/data/icons/cyber-security-part-1/46/shield_add_security-512.png',
 ]
+export const spawnEnemyFrequency = 3000 //ms
