@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { canvasSpec } from '../config'
 import {  
   // BasicObj,
   Enemy,
@@ -21,12 +22,50 @@ import monster01 from '../images/monster01.png'
 import monster02 from '../images/monster02.png'
 import monster03 from '../images/monster03.png'
 //
+import ground from '../images/ground.png'
 import building from '../images/building.png'
 import buff01 from '../images/buff01.png'
 import heartImg from '../images/heart-icon.png'
 import coinImg from '../images/coin-icon.png'
 
 //custom components
+const backGround = () => {
+  const amountOfImg = canvasSpec.width / 40 + 1 //image width is 40
+  const images = [...Array(amountOfImg).keys()].map(i => (
+    new BasicStaticImgObj({
+      id: 'ground',
+      x: i * 40, y: canvasSpec.height - 30,
+      width: 40, height: 128,
+      imgSrc: ground,
+      movement: {
+        isMove: true,
+        vx: -5,
+        vy: 0,
+      }
+    })
+  ))
+  return ({
+    position: 0,
+    updatePosition() {
+      if(this.position === -40) {
+        images.forEach(image => {
+          image.x += 40
+        })
+        this.position = 0
+      }
+    },
+    render(ctx) {
+      this.updatePosition()
+      images.forEach(image => {
+        image.render(ctx)
+      })
+      this.position -= 5
+    }
+  })
+}
+export const loopBack = backGround() 
+
+
 export const heart = (x, y, cloneId) => new BasicStaticImgObj({
   id: 'heart', cloneId,
   x, y, 
@@ -232,21 +271,27 @@ export const numericText = (x, y, fillStyle, prop=0, value=0) => {
 export const scoreText = numericText(800, 20, '#1a0', 'score', 0)
 export const healthText = numericText(100, 20, '#a00', 'health', 10)
 export const levelText = numericText(900, 20, '#111', 'level', 1)
+export const coinText = numericText(700, 20, '#fa0', 'coin', 0)
 
 //
 
-export const myPlayer = new ControllableObj({
-  // fillStyle: '#a0a',
-  imgSrc: iconImg,
-  x: 100, y: 100,
-  width: 90, height: 100,
-  hitbox: { w: 50, h: 50 },
-  status: {
-    default: iconImg,
-    directive: iconImg03,
-    spread: iconImg02,
-  },
-})
+export const player = () => {
+  const obj = new ControllableObj({
+    // fillStyle: '#a0a',
+    imgSrc: iconImg,
+    x: 100, y: 300,
+    width: 90, height: 100,
+    hitbox: { w: 50, h: 50 },
+    status: {
+      default: iconImg,
+      directive: iconImg03,
+      spread: iconImg02,
+    },
+  })
+  obj.attackFrequency = 600 //every 600ms can attack
+  return obj
+} 
+export const myPlayer = player()
 console.log(myPlayer)
 
 

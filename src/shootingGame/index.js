@@ -15,8 +15,10 @@ import {
   scoreText,
   healthText,
   levelText,
+  coinText,
   heart,
   coin,
+  loopBack,
 } from './components'
 import {  
   simpleCheckObjCollide,
@@ -24,7 +26,10 @@ import {
   getAngleVelocity,
   getIntervalDeg,
 } from '../game/gameFunc'
-import { levelConfig } from './levelConfig'
+import { 
+  levelConfig,
+  uiImages, 
+} from './levelConfig'
 import { 
   getProbability,
   getSingleProbability, 
@@ -41,6 +46,49 @@ const spawnObj = (gameInstance, originObjs, newObj) => {
   gameInstance.gameNewCloneId += 1
 }
 
+//
+let UI
+window.onload = () => {
+  UI = document.getElementById('UI')
+  // setUI()
+  console.log(UI)
+}
+//set UI
+const setUIcoinNow = (coinNow) => {
+  document.getElementById('coinNow').innerText = coinNow
+}
+export const setUI = (buyItemFn, itemPrices, setGameContinueFn, coinNow) => {
+  UI.style.display = 'block'
+  const newContainer = document.getElementsByClassName('ui-container')[0]
+  setUIcoinNow(coinNow)
+  while(newContainer.firstChild) {
+    newContainer.removeChild(newContainer.firstChild)
+  }
+  // newContainer.setAttribute('class', 'ui-container')
+  //
+  for (let i = 0; i < uiImages.length; i++) {
+    const image = uiImages[i]
+    const newImageContainer = document.createElement('div')
+    newImageContainer.setAttribute('class', 'image-container')
+    const imageEl = document.createElement('img')
+    imageEl.setAttribute('src', image)
+    const title = document.createElement('h3')
+    title.textContent = `$ ${ itemPrices[i] }`
+    newImageContainer.appendChild(imageEl)
+    newImageContainer.appendChild(title)
+    newContainer.appendChild(newImageContainer)
+    // document.getElementsByClassName('image-container')[i].onclick = () => window.alert('aa')
+  }
+  const imageContainers = document.getElementsByClassName('image-container')
+  for (let i = 0; i < imageContainers.length; i++) {
+    const el = imageContainers[i]
+    el.addEventListener('click', buyItemFn[i])
+  }
+  document.getElementById('continueBTN').addEventListener('click', () => {
+    setGameContinueFn()
+    UI.style.display = 'none'
+  })
+}
 
 
 
@@ -180,6 +228,9 @@ export class ShootingGame extends Game {
       gameObj.obj.setProp(gameObj.objProp, value)
     })
   }
+  eliminateEnemy() {
+    
+  }
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
     //
@@ -200,6 +251,10 @@ export class ShootingGame extends Game {
     const enemyHealthUpdate = (enemy, minusHp=2) => {
       enemy.setProp('health', enemy.health - minusHp)
       enemy.checkIsAlive && enemy.checkIsAlive()
+    }
+    const eleminateEnemy = (e) => {
+      removeGameObjs('gameEnemies', e)
+      enemyHealthUpdate(e, 10000)
     }
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
@@ -222,6 +277,7 @@ export class ShootingGame extends Game {
     }
     //
     this.buffItems.forEach(e => {
+      //if collide with player
       if(simpleCheckObjCollide(myPlayer, e)) {
         switch (e.id) {
           case 'buff': {
@@ -235,6 +291,10 @@ export class ShootingGame extends Game {
           case 'heart': {
             this.updateGameProp('playerLife', this.gameProp.playerLife + 1)
             // console.log(myPlayer)
+            break
+          }
+          case 'coin': {
+            this.updateGameProp('coin', this.gameProp.coin + 10)
             break
           }
           default:
@@ -284,8 +344,7 @@ export class ShootingGame extends Game {
     this.gameEnemies.forEach(e => {
       //remove enemy if it is out of bound
       if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
-        removeGameObjs('gameEnemies', e)
-        enemyHealthUpdate(e, 10000)
+        eleminateEnemy(e)
       } else {
         e.render(this.ctx)
       }
@@ -295,6 +354,9 @@ export class ShootingGame extends Game {
     scoreText.render(this.ctx)
     healthText.render(this.ctx)
     levelText.render(this.ctx)
+    coinText.render(this.ctx)
+    loopBack.render(this.ctx)
+    //
     //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
       const OBJ = this.newGameObjs[i]
@@ -316,10 +378,20 @@ export class ShootingGame extends Game {
             removeGameObjs('gameEnemies', enemy)
             //update score
             this.updateGameProp('score', this.gameProp.score + 100)
-            //boss
+            //boss is defeated
             if(enemy.id === 'boss') {
               this.gameProp.bossFight = false
+              //update level
+              this.gameProp.level += 1
+              levelText.setProp('level', levelConfig[this.gameProp.level].level)
+              this.gameProp.enemyAmountInThisLevel = 0
+              //pause the game //when boss is die and level value is 1 
+              if(this.gameProp.level === 1) {
+                //////
+                popUpShopUI(this, eleminateEnemy)
+              }
             }
+            //
             //spawn buff
             if(enemy.id === 'enemy03') {
               const newBuff = getNewBuffItem(enemy.x, enemy.y, this.gameNewCloneId)
@@ -343,7 +415,10 @@ export class ShootingGame extends Game {
     // this.ctx.closePath()
 
     //animation
-    requestAnimationFrame( this.render.bind(this) )
+    console.log(this.gameEnemies)
+    if(!this.gameProp.isPause) {
+      requestAnimationFrame( this.render.bind(this) )
+    }
     // if(this.gameProp.playerLife <= 0) {
     //   window.alert('you die~')
     //   clearInterval(this.spawnEnemy)
@@ -353,12 +428,65 @@ export class ShootingGame extends Game {
     
   }
 }
+
+const popUpShopUI = (gameInstance, removeEnemiesFn) => {
+  //all objects remained on screen clear?
+  gameInstance.gameEnemies.forEach(e => {
+    removeEnemiesFn(e)
+  })
+  gameInstance.newGameObjs = []
+  gameInstance.buffItems = []
+  gameInstance.gameProp.isPause = true
+  clearInterval(gameInstance.spawnEnemy)
+  //popup UI
+  // buyItemFunctions
+  const checkCoinIsEnough = (price, fn) => () => {
+    if(gameInstance.gameProp.coin >= price) {
+      gameInstance.updateGameProp('coin', gameInstance.gameProp.coin - price)
+      fn()
+      //refresh coin text
+      setUIcoinNow(gameInstance.gameProp.coin)
+    } else {
+      window.alert('your coins is not enough~')
+    }
+  }
+  const prices = [50, 30, 40] //upgrade prices
+  const playerLifeUpLimit = () => {
+    gameInstance.gameProp.playerLifeLimit += 1
+    gameInstance.updateGameProp('playerLife', gameInstance.gameProp.playerLifeLimit)
+    window.alert('Your life limit now is: ' + gameInstance.gameProp.playerLifeLimit)
+  }
+  const bulletsSpeedUp = () => {
+    myPlayer.attackFrequency -= 100 //minus 100ms
+    window.alert('Your attack speed is up!')
+  }
+  const playerSpeedUp = () => {
+    myPlayer.movement.vStandard += 1
+    window.alert('Your move is faster!')
+  }
+  const buyFns = [
+    playerLifeUpLimit,
+    bulletsSpeedUp,
+    playerSpeedUp,
+  ].map((fn, i) => checkCoinIsEnough(prices[i], fn))
+  //
+  const continueGame = () => {
+    gameInstance.gameProp.isPause = false
+    gameInstance.render()
+    gameInstance.spawnEnemy = gameInstance.spawnEnemyInterval()
+  }
+  setUI(buyFns, prices, continueGame, gameInstance.gameProp.coin)
+}
+
 const initGameProp = {
   level: 0, // array seq, display is level 1
   score: 0,
+  coin: 0,
   playerLife: 10,
+  playerLifeLimit: 10,
   enemyAmountInThisLevel: 0,
   bossFight: false,
+  isPause: false,
 }
 
 export const MyGame = (canvas, canvasSpec) => {
@@ -368,5 +496,6 @@ export const MyGame = (canvas, canvasSpec) => {
     .addPropToSync(myPlayer, 'health', 'playerLife')
     .addPropToSync(scoreText, 'score', 'score')
     .addPropToSync(levelText, 'level', 'level')
+    .addPropToSync(coinText, 'coin', 'coin')
   return game
 }

@@ -79,6 +79,6 @@ export const shootBullet = (gameInstance, bulletFn=getNewBullet, obj=myPlayer) =
       shootDefaultBullet()
   }
   gameInstance.canShootBullet = false
-  setTimeout(() => { gameInstance.canShootBullet = true }, 300)
+  setTimeout(() => { gameInstance.canShootBullet = true }, myPlayer.attackFrequency)
   // console.log(this.newGameObjs)
 }
