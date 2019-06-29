@@ -19,6 +19,8 @@ import {
   heart,
   coin,
   loopBack,
+  playerHeartsUI,
+  gameBossLifeUI,
 } from './components'
 import {  
   simpleCheckObjCollide,
@@ -147,7 +149,7 @@ export class ShootingGame extends Game {
               ), 
             ]
           }
-          console.log(this.enemyBullets)
+          // console.log(this.enemyBullets)
           this.gameNewCloneId += 5
         }
         //missile
@@ -249,7 +251,13 @@ export class ShootingGame extends Game {
       this[objs] = this[objs].filter(o => o.cloneId !== _enemy.cloneId)
     }
     const enemyHealthUpdate = (enemy, minusHp=2) => {
-      enemy.setProp('health', enemy.health - minusHp)
+      const newHp = enemy.health - minusHp
+      enemy.setProp('health', newHp)
+      if(enemy.id === 'boss') {
+        gameBossLifeUI.setProp('bossHealthNow', newHp)
+        gameBossLifeUI.setProp('hurtHealth', minusHp)
+        console.log(newHp, gameBossLifeUI.bossHealthNow)
+      }
       enemy.checkIsAlive && enemy.checkIsAlive()
     }
     const eleminateEnemy = (e) => {
@@ -356,6 +364,8 @@ export class ShootingGame extends Game {
     levelText.render(this.ctx)
     coinText.render(this.ctx)
     loopBack.render(this.ctx)
+    playerHeartsUI.render(this.ctx)
+    gameBossLifeUI.render(this.ctx)
     //
     //check bullets and ememies
     for (let i = 0; i < this.newGameObjs.length; i++) {
@@ -415,7 +425,7 @@ export class ShootingGame extends Game {
     // this.ctx.closePath()
 
     //animation
-    console.log(this.gameEnemies)
+    // console.log(this.gameEnemies)
     if(!this.gameProp.isPause) {
       requestAnimationFrame( this.render.bind(this) )
     }
@@ -454,6 +464,7 @@ const popUpShopUI = (gameInstance, removeEnemiesFn) => {
   const playerLifeUpLimit = () => {
     gameInstance.gameProp.playerLifeLimit += 1
     gameInstance.updateGameProp('playerLife', gameInstance.gameProp.playerLifeLimit)
+    gameInstance.updateGameProp('playerLifeLimit', gameInstance.gameProp.playerLifeLimit)
     window.alert('Your life limit now is: ' + gameInstance.gameProp.playerLifeLimit)
   }
   const bulletsSpeedUp = () => {
@@ -494,6 +505,8 @@ export const MyGame = (canvas, canvasSpec) => {
   game
     .addPropToSync(healthText, 'health', 'playerLife')
     .addPropToSync(myPlayer, 'health', 'playerLife')
+    .addPropToSync(playerHeartsUI, 'playerLife', 'playerLife')
+    .addPropToSync(playerHeartsUI, 'lifeLimit', 'playerLifeLimit')
     .addPropToSync(scoreText, 'score', 'score')
     .addPropToSync(levelText, 'level', 'level')
     .addPropToSync(coinText, 'coin', 'coin')

@@ -147,7 +147,7 @@ export class BasicObj {
     ctx.save()
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
-    ctx.fillRect(this.x, this.y, this.width, this.height)
+    ctx.fillRect(0, 0, this.width, this.height)
     ctx.stroke()
     ctx.fill()
     ctx.restore()
@@ -532,6 +532,26 @@ const myPlayer = new ControllableObj({
   x: 100, y: 100,
   w: 200, h: 200,
 })
+
+export class GroupObjs {
+  constructor({ groupObjs=[], updateFns=[] }) {
+    this.display = true
+    this.groupObjs = groupObjs
+    this.updateFns = updateFns
+  }
+  setProp(prop, value) {
+    this[prop] = value
+  }
+  render(ctx) {
+    if(this.display) {
+      this.updateFns.forEach(fn => { fn(this) })
+      this.groupObjs.forEach(obj => { obj.render(ctx) })
+    }
+  }
+}
+
+
+
 
 export class Game {
   constructor(canvas, canvasSpec, gameProp) {
