@@ -31,6 +31,7 @@ import {
 import { 
   levelConfig,
   uiImages, 
+  bossHealth,
 } from './levelConfig'
 import { 
   getProbability,
@@ -195,6 +196,8 @@ export class ShootingGame extends Game {
     this.gameNewCloneId += 1
   }
   spawnBoss() {
+    gameBossLifeUI.display = true //boss health display
+    gameBossLifeUI.setProp('bossHealthNow', bossHealth)
     this.gameProp.bossFight = true
     const fn = () => { this.bossShootBullets() }
     this.gameEnemies = [
@@ -390,15 +393,20 @@ export class ShootingGame extends Game {
             this.updateGameProp('score', this.gameProp.score + 100)
             //boss is defeated
             if(enemy.id === 'boss') {
+              gameBossLifeUI.display = false
               this.gameProp.bossFight = false
               //update level
               this.gameProp.level += 1
               levelText.setProp('level', levelConfig[this.gameProp.level].level)
               this.gameProp.enemyAmountInThisLevel = 0
               //pause the game //when boss is die and level value is 1 
-              if(this.gameProp.level === 1) {
-                //////
-                popUpShopUI(this, eleminateEnemy)
+              if(this.gameProp.level === 1) { //popUp UI display condition 
+                //
+                this.gameProp.isPause = true
+                clearGameAllObjs(this, eleminateEnemy)
+                this.render()
+                setTimeout(() => { popUpShopUI(this, eleminateEnemy) }, 1000)
+                
               }
             }
             //
@@ -439,15 +447,21 @@ export class ShootingGame extends Game {
   }
 }
 
-const popUpShopUI = (gameInstance, removeEnemiesFn) => {
-  //all objects remained on screen clear?
+const clearGameAllObjs = (gameInstance, removeEnemiesFn) => {
   gameInstance.gameEnemies.forEach(e => {
     removeEnemiesFn(e)
   })
+  gameInstance.enemyBullets = []
   gameInstance.newGameObjs = []
   gameInstance.buffItems = []
   gameInstance.gameProp.isPause = true
   clearInterval(gameInstance.spawnEnemy)
+}
+
+
+const popUpShopUI = (gameInstance, removeEnemiesFn) => {
+  //all objects remained on screen clear?
+  // clearGameAllObjs(gameInstance, removeEnemiesFn)
   //popup UI
   // buyItemFunctions
   const checkCoinIsEnough = (price, fn) => () => {

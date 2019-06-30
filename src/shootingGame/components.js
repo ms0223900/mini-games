@@ -222,6 +222,7 @@ const bossLifeUI = (width=500, height=10) => {
   obj.bossHealthNow = bossHealth
   obj.hurtHealth = 0
   obj.startHurt = false
+  obj.display = false
   return obj
 }
 export const gameBossLifeUI = bossLifeUI()

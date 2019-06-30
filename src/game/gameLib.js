@@ -481,7 +481,7 @@ export class ControllableObj extends BasicStaticImgObj {
   }
   moveByUser(e) {
     const { keyCode } = e
-    if([37, 38, 39, 40].includes(keyCode)) {
+    if([37, 38, 39, 40, 65, 87, 68, 83].includes(keyCode)) {
       this.movement.isMove = true
     }
     const getMoveSet = (moveset, keyCode) => {
@@ -509,17 +509,17 @@ export class ControllableObj extends BasicStaticImgObj {
     //   this.movement.vy = this.movement.vStandard * 1
     // }
 
-    if(this.movement.moveSet.includes(37)) {
+    if(this.movement.moveSet.includes(37) || this.movement.moveSet.includes(65)) {
       this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * -1
-    } else if(this.movement.moveSet.includes(38)) {
+    } else if(this.movement.moveSet.includes(38) || this.movement.moveSet.includes(87)) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * -1
-    } else if(this.movement.moveSet.includes(39)) {
+    } else if(this.movement.moveSet.includes(39) || this.movement.moveSet.includes(68)) {
       this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
       // this.x += 6
-    } else if(this.movement.moveSet.includes(40)) {
+    } else if(this.movement.moveSet.includes(40) || this.movement.moveSet.includes(83)) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
     }
