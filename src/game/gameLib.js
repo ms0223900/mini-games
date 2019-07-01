@@ -492,6 +492,7 @@ export class ControllableObj extends BasicStaticImgObj {
       }
     }
     this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
+    const checkMoveSet = (keyCode) => this.movement.moveSet.includes(keyCode)
     // console.log(this.movement.moveSet)
     //move by keyCode
     // if(keyCode === 37) {
@@ -509,17 +510,17 @@ export class ControllableObj extends BasicStaticImgObj {
     //   this.movement.vy = this.movement.vStandard * 1
     // }
 
-    if(this.movement.moveSet.includes(37) || this.movement.moveSet.includes(65)) {
+    if(checkMoveSet(37) || checkMoveSet(65)) {
       this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * -1
-    } else if(this.movement.moveSet.includes(38) || this.movement.moveSet.includes(87)) {
+    } else if(checkMoveSet(38) || checkMoveSet(87)) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * -1
-    } else if(this.movement.moveSet.includes(39) || this.movement.moveSet.includes(68)) {
+    } else if(checkMoveSet(39) || checkMoveSet(68)) {
       this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
       // this.x += 6
-    } else if(this.movement.moveSet.includes(40) || this.movement.moveSet.includes(83)) {
+    } else if(checkMoveSet(40) || checkMoveSet(83)) {
       this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
     }

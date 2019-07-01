@@ -5,6 +5,7 @@ import {
 import {  
   getNewBullet,
   getNewEnemyBullet,
+  enemies,
   getNewDirectiveBullet,
   getNewObstacle,
   getNewBuffItem,
@@ -27,18 +28,16 @@ import {
   getVelocity,
   getAngleVelocity,
   getIntervalDeg,
+  getProbability,
+  getSingleProbability, 
+  getSpreadObjs,
 } from '../game/gameFunc'
 import { 
   levelConfig,
   uiImages, 
   bossHealth,
 } from './levelConfig'
-import { 
-  getProbability,
-  getSingleProbability, 
-  getSpreadObjs,
-} from '../game/gameFunc'
-import { spawnEnemy } from './enemies'
+import { spawnEnemy, spawnSingleEnemy } from './enemies'
 import { shootBullet } from './player'
 
 const spawnObj = (gameInstance, originObjs, newObj) => {
@@ -172,8 +171,8 @@ export class ShootingGame extends Game {
           this.gameNewCloneId += 1
         }
         //random spawn bullets
-        const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet]
-        const bulletProbability = [0.7, 0.3, 0] //maybe differ from different boss
+        const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet,() => { spawnSingleEnemy(this, enemies[2]) }]
+        const bulletProbability = [0.1, 0.2, 0.2, 0.5] //maybe differ from different boss
         const bulletRand = getProbability(bulletProbability)
         bulletFns[bulletRand]()
       }

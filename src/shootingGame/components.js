@@ -231,9 +231,9 @@ export const gameBossLifeUI = bossLifeUI()
 export const enemy01 = newEnemy('enemy01', monster01, { isMove: true, vx: -3, vy: 0, })
 export const enemy02 = newEnemy('enemy02', monster02, { isMove: true, vx: -5, vy: 0, })
 export const enemy03 = newEnemy('enemy03', monster03, { isMove: true, vx: -7, vy: 0, })
+export const enemies = [enemy01, enemy02, enemy03]
 
-export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0.33, 0.33, 0.33]) => {
-  const enemies = [enemy01, enemy02, enemy03]
+export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0.33, 0.33, 0.33]) => {  
   //enemy spawn probability
   const num = getProbability(enemyPercent) || 0
   if(num === 1) {
