@@ -36,7 +36,7 @@ export const spawnSingleEnemy = (gameInstance, enemyFn) => {
     ...gameInstance.gameEnemies,
     newEnemy,
   ]
-  gameInstance.gameProp.enemyAmountInThisLevel += 1
+  // gameInstance.gameProp.enemyAmountInThisLevel += 1
   gameInstance.gameNewCloneId += 1
 }
 
@@ -52,7 +52,7 @@ export const spawnEnemy = (gameInstance) => {
     // levelText.setProp('level', levelConfig[gameInstance.gameProp.level].level)
     // gameInstance.gameProp.enemyAmountInThisLevel = 0
     //spawn boss
-    gameInstance.spawnBoss()
+    gameInstance.toNextLevel()
   } else if (!bossFight) {
     console.log(level)
     //spawn enemy

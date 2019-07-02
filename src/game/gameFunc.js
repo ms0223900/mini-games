@@ -356,7 +356,8 @@ export const reduceArrPrevAll = (arr, i) => (
 )
 
 export const getProbability = (percentArr) => {
-  const rand = Math.round(Math.random() * 100) / 100
+  const numTotal = (percentArr.reduce((a=0, b) => a + b, 0) * 100)
+  const rand = Math.round(Math.random() * numTotal) / 100
   for (let i = 0; i < percentArr.length; i++) {
     if(rand >= reduceArrPrevAll(percentArr, i - 1) && rand < reduceArrPrevAll(percentArr, i)) {
       return i

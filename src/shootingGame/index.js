@@ -17,6 +17,8 @@ import {
   healthText,
   levelText,
   coinText,
+  waveText,
+  //
   heart,
   coin,
   loopBack,
@@ -206,6 +208,25 @@ export class ShootingGame extends Game {
     // console.log(this.gameEnemies)
     this.gameNewCloneId += 1
   }
+  displayWaveText() {
+    this.updateGameProp('level', this.gameProp.level + 1)
+    waveText.setProp('display', true)
+    this.gameProp.isPause = true
+    // this.render()
+    this.gameProp.enemyAmountInThisLevel = 0
+    setTimeout(() => {
+      waveText.setProp('display', false)
+      this.gameProp.isPause = false
+      this.render()
+    }, 2000)
+  }
+  toNextLevel() {
+    if((this.gameProp.level + 1) % 3 === 0) { //lv 3, lv 6...
+      this.spawnBoss()
+    } else {
+      this.displayWaveText()
+    }
+  }
   spawnEnemyFn() {
     spawnEnemy(this)
   }
@@ -262,9 +283,10 @@ export class ShootingGame extends Game {
       }
       enemy.checkIsAlive && enemy.checkIsAlive()
     }
-    const eleminateEnemy = (e) => {
+    const eliminateEnemy = (e) => {
       removeGameObjs('gameEnemies', e)
       enemyHealthUpdate(e, 10000)
+      this.gameProp.enemyAmountInThisLevel += 1
     }
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
@@ -354,17 +376,19 @@ export class ShootingGame extends Game {
     this.gameEnemies.forEach(e => {
       //remove enemy if it is out of bound
       if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
-        eleminateEnemy(e)
+        eliminateEnemy(e)
       } else {
         e.render(this.ctx)
       }
     })
+
     //render non destroied obj
     myPlayer.render(this.ctx)
     scoreText.render(this.ctx)
     healthText.render(this.ctx)
     levelText.render(this.ctx)
     coinText.render(this.ctx)
+    waveText.render(this.ctx)
     loopBack.render(this.ctx)
     playerHeartsUI.render(this.ctx)
     gameBossLifeUI.render(this.ctx)
@@ -397,14 +421,14 @@ export class ShootingGame extends Game {
               //update level
               this.gameProp.level += 1
               levelText.setProp('level', levelConfig[this.gameProp.level].level)
-              this.gameProp.enemyAmountInThisLevel = 0
+              this.displayWaveText()
               //pause the game //when boss is die and level value is 1 
               if(this.gameProp.level === 1) { //popUp UI display condition 
                 //
                 this.gameProp.isPause = true
-                clearGameAllObjs(this, eleminateEnemy)
+                clearGameAllObjs(this, eliminateEnemy)
                 this.render()
-                setTimeout(() => { popUpShopUI(this, eleminateEnemy) }, 1000)
+                setTimeout(() => { popUpShopUI(this, eliminateEnemy) }, 1000)
                 
               }
             }
@@ -455,6 +479,7 @@ const clearGameAllObjs = (gameInstance, removeEnemiesFn) => {
   gameInstance.buffItems = []
   gameInstance.gameProp.isPause = true
   clearInterval(gameInstance.spawnEnemy)
+  clearInterval(gameInstance.spawnObstacle)
 }
 
 
@@ -522,6 +547,7 @@ export const MyGame = (canvas, canvasSpec) => {
     .addPropToSync(playerHeartsUI, 'lifeLimit', 'playerLifeLimit')
     .addPropToSync(scoreText, 'score', 'score')
     .addPropToSync(levelText, 'level', 'level')
+    .addPropToSync(waveText, 'wave', 'level')
     .addPropToSync(coinText, 'coin', 'coin')
   return game
 }

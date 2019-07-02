@@ -371,7 +371,10 @@ export const scoreText = numericText(800, 20, '#1a0', 'score', 0)
 export const healthText = numericText(100, 20, '#a00', 'health', 10)
 export const levelText = numericText(900, 20, '#111', 'level', 1)
 export const coinText = numericText(700, 20, '#fa0', 'coin', 0)
-
+export const waveText = numericText(canvasSpec.width / 2, 220, '#222', 'wave', '1')
+  .setProp('textConfig', '30px roboto')
+  .setProp('textAlign', 'center')
+  .setProp('display', false) //default is not display
 //
 
 export const player = () => {

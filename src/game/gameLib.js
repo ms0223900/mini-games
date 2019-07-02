@@ -236,9 +236,10 @@ export class Enemy extends BasicStaticImgObj {
 
 
 export class BasicText {
-  constructor({ id='text', cloneId=0, x=0, y=0, text='default text', textConfig='16px roboto', width=100, height=100, fillStyle='#111', strokeStyle='#fff', movement=null }) {
+  constructor({ id='text', cloneId=0, x=0, y=0, text='default text', textConfig='16px roboto', textAlign='start', width=100, height=100, fillStyle='#111', strokeStyle='#fff', movement=null }) {
     this.id = id
     this.cloneId = cloneId
+    this.display = true
     this.x = x
     this.y = y
     this.width = width
@@ -251,6 +252,7 @@ export class BasicText {
     }
     //
     this.text = text
+    this.textAlign = textAlign
     this.textConfig = textConfig
     this.fillStyle = fillStyle
     this.strokeStyle = strokeStyle
@@ -301,6 +303,7 @@ export class BasicText {
   drawOnCanvas(ctx) {
     ctx.save()
     ctx.font = this.textConfig
+    ctx.textAlign = this.textAlign
     ctx.fillStyle = this.fillStyle
     ctx.fillText(this.text, this.x, this.y)
     ctx.restore()
@@ -309,8 +312,9 @@ export class BasicText {
     this.drawOnCanvas(ctx)
   }
   render(ctx) {
-    
-    this.draw(ctx)
+    if(this.display) {
+      this.draw(ctx)
+    }
   }
 }
 

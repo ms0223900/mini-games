@@ -2,7 +2,7 @@ export const levelConfig = [
   {
     level: 1,
     enemyAmount: 10,
-    enemyPercent: [0.7, 0.2, 0.1]
+    enemyPercent: [0.7, 0.2, 0.8]
   },
   {
     level: 2,
