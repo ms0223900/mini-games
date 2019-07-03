@@ -1,4 +1,7 @@
-import { levelConfig } from './levelConfig'
+import { 
+  // levelConfig,
+  getInfiniteLevel, 
+} from './levelConfig'
 // import { levelText } from './components'
 import { 
   getNewEnemyBullet,
@@ -9,7 +12,7 @@ import {
 
 export const spawnSingleEnemy = (gameInstance, enemyFn) => {
   const { level } = gameInstance.gameProp
-  const thisLevel = levelConfig[level]
+  const thisLevel = getInfiniteLevel(level)
   const bulllll = (obj) => {
     gameInstance.enemyBullets = [
       ...gameInstance.enemyBullets,
@@ -36,22 +39,17 @@ export const spawnSingleEnemy = (gameInstance, enemyFn) => {
     ...gameInstance.gameEnemies,
     newEnemy,
   ]
-  // gameInstance.gameProp.enemyAmountInThisLevel += 1
   gameInstance.gameNewCloneId += 1
 }
 
 
 export const spawnEnemy = (gameInstance) => {
   const { level, bossFight } = gameInstance.gameProp
-  const maxLevel = levelConfig.length - 1
-  const thisLevel = levelConfig[level]
+  // const maxLevel = levelConfig.length - 1
+  const thisLevel = getInfiniteLevel(level)
   //check amount in gameInstance level is fulfilled or not
-  if(level < maxLevel && gameInstance.gameProp.enemyAmountInThisLevel >= thisLevel.enemyAmount && !bossFight) {
-    //update level
-    // gameInstance.gameProp.level += 1
-    // levelText.setProp('level', levelConfig[gameInstance.gameProp.level].level)
-    // gameInstance.gameProp.enemyAmountInThisLevel = 0
-    //spawn boss
+  if(gameInstance.gameProp.enemyAmountInThisLevel >= thisLevel.enemyAmount && !bossFight) {
+    //continue to next wave
     gameInstance.toNextLevel()
   } else if (!bossFight) {
     console.log(level)

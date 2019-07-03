@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-import iconImg from '../images/iconImg.png'
 import { 
   checkObjInsideCollideWithWall, 
   checkMoveObjCollideWithObj ,
@@ -531,13 +530,6 @@ export class ControllableObj extends BasicStaticImgObj {
     // console.log(keyCode)
   }
 }
-const myPlayer = new ControllableObj({
-  // fillStyle: '#a0a',
-  imgSrc: iconImg,
-  x: 100, y: 100,
-  w: 200, h: 200,
-})
-
 export class GroupObjs {
   constructor({ groupObjs=[], updateFns=[] }) {
     this.display = true
@@ -602,14 +594,6 @@ export class Game {
   }
   newGameEvent(e) {
     const { keyCode } = e
-    if(keyCode === 32) {
-      this.newGameObjs = [
-        ...this.newGameObjs,
-        getNewBullet(myPlayer.x, myPlayer.y + myPlayer.height / 2, this.gameNewCloneId), 
-      ]
-      this.gameNewCloneId += 1
-      console.log(this.newGameObjs)
-    }
   }
   spawnEnemyFn() {
     console.log(this.gameEnemies)

@@ -17,7 +17,6 @@ import {
 //player
 import iconImg from '../images/chick_190624-02.png'
 import iconImg02 from '../images/chick_190624-01.png'
-import iconImg03 from '../images/iconImg-03.png'
 //bullets
 import bullet01 from '../images/chick_190624-04.png'
 import bullet02 from '../images/chick_190624-03.png'
@@ -386,7 +385,6 @@ export const player = () => {
     hitbox: { w: 50, h: 50 },
     status: {
       default: iconImg,
-      directive: iconImg03,
       spread: iconImg02,
     },
   })

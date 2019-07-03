@@ -36,6 +36,7 @@ import {
 } from '../game/gameFunc'
 import { 
   levelConfig,
+  getInfiniteLevel,
   uiImages, 
   bossHealth,
 } from './levelConfig'
@@ -88,9 +89,12 @@ export const setUI = (buyItemFn, itemPrices, setGameContinueFn, coinNow) => {
     const el = imageContainers[i]
     el.addEventListener('click', buyItemFn[i])
   }
-  document.getElementById('continueBTN').addEventListener('click', () => {
+  const continueBTN = document.getElementById('continueBTN')
+  continueBTN.addEventListener('click', () => {
     setGameContinueFn()
     UI.style.display = 'none'
+    const clonedBTN = continueBTN.cloneNode(true)
+    continueBTN.parentNode.replaceChild(clonedBTN, continueBTN)
   })
 }
 
@@ -209,15 +213,19 @@ export class ShootingGame extends Game {
     this.gameNewCloneId += 1
   }
   displayWaveText() {
+    //display and update game level at the same time
     this.updateGameProp('level', this.gameProp.level + 1)
     waveText.setProp('display', true)
-    this.gameProp.isPause = true
+    // this.gameProp.isPause = true
+    clearGameAllObjs(this, this.eliminateEnemy)
     // this.render()
     this.gameProp.enemyAmountInThisLevel = 0
     setTimeout(() => {
+      console.log('timeout')
       waveText.setProp('display', false)
       this.gameProp.isPause = false
       this.render()
+      this.spawnEnemy = this.spawnEnemyInterval()
     }, 2000)
   }
   toNextLevel() {
@@ -253,9 +261,26 @@ export class ShootingGame extends Game {
       gameObj.obj.setProp(gameObj.objProp, value)
     })
   }
-  eliminateEnemy() {
-    
+  //
+  eliminateEnemy = (e) => {
+    this.removeGameObjs('gameEnemies', e)
+    this.enemyHealthUpdate(e, 10000)
+    this.gameProp.enemyAmountInThisLevel += 1
   }
+  removeGameObjs = (objs, _enemy) => {
+    this[objs] = this[objs].filter(o => o.cloneId !== _enemy.cloneId)
+  }
+  enemyHealthUpdate = (enemy, minusHp=2) => {
+    const newHp = enemy.health - minusHp
+    enemy.setProp('health', newHp)
+    if(enemy.id === 'boss') {
+      gameBossLifeUI.setProp('bossHealthNow', newHp)
+      gameBossLifeUI.setProp('hurtHealth', minusHp)
+      console.log(newHp, gameBossLifeUI.bossHealthNow)
+    }
+    enemy.checkIsAlive && enemy.checkIsAlive()
+  }
+  //
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
     //
@@ -270,24 +295,6 @@ export class ShootingGame extends Game {
       e.x <= -100 || e.x >= this.canvasSpec.width + 100 ||
       e.y <= -100 || e.y >= this.canvasSpec.height + 100
     )
-    const removeGameObjs = (objs, _enemy) => {
-      this[objs] = this[objs].filter(o => o.cloneId !== _enemy.cloneId)
-    }
-    const enemyHealthUpdate = (enemy, minusHp=2) => {
-      const newHp = enemy.health - minusHp
-      enemy.setProp('health', newHp)
-      if(enemy.id === 'boss') {
-        gameBossLifeUI.setProp('bossHealthNow', newHp)
-        gameBossLifeUI.setProp('hurtHealth', minusHp)
-        console.log(newHp, gameBossLifeUI.bossHealthNow)
-      }
-      enemy.checkIsAlive && enemy.checkIsAlive()
-    }
-    const eliminateEnemy = (e) => {
-      removeGameObjs('gameEnemies', e)
-      enemyHealthUpdate(e, 10000)
-      this.gameProp.enemyAmountInThisLevel += 1
-    }
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
       if(simpleCheckObjCollide(player, target) && !player.noHurt) {
@@ -332,7 +339,7 @@ export class ShootingGame extends Game {
           default:
             break;
         }
-        removeGameObjs('buffItems', e)
+        this.removeGameObjs('buffItems', e)
       } else {
         if(e.id === 'coin') {
           const v = getVelocity(e, myPlayer, 12)
@@ -345,7 +352,7 @@ export class ShootingGame extends Game {
     this.newGameObjs.forEach(e => {
       //remove bullet if it is out of bound
       if(e.x >= this.canvasSpec.width + 100) {
-        removeGameObjs('newGameObjs', e)
+        this.removeGameObjs('newGameObjs', e)
       } else {
         e.render(this.ctx)
       }
@@ -366,7 +373,7 @@ export class ShootingGame extends Game {
         }
       }
       if(checkIsOutOfBounding(e) || checkPlayerHitByTarget(myPlayer, e)) {
-        removeGameObjs('enemyBullets', e)
+        this.removeGameObjs('enemyBullets', e)
       } else {
         missileRedirect()
         e.render(this.ctx)
@@ -376,7 +383,7 @@ export class ShootingGame extends Game {
     this.gameEnemies.forEach(e => {
       //remove enemy if it is out of bound
       if((e.x <= -100 || checkPlayerHitByTarget(myPlayer, e)) && e.id !== 'boss') {
-        eliminateEnemy(e)
+        this.eliminateEnemy(e)
       } else {
         e.render(this.ctx)
       }
@@ -408,10 +415,10 @@ export class ShootingGame extends Game {
           })
           
           //update enemy health
-          enemyHealthUpdate(enemy)
+          this.enemyHealthUpdate(enemy)
           //if enemy die, remove collided bullet and enemy
           if(enemy.health <= 0 && enemy.type !== 'obs') {
-            removeGameObjs('gameEnemies', enemy)
+            this.removeGameObjs('gameEnemies', enemy)
             //update score
             this.updateGameProp('score', this.gameProp.score + 100)
             //boss is defeated
@@ -419,18 +426,13 @@ export class ShootingGame extends Game {
               gameBossLifeUI.display = false
               this.gameProp.bossFight = false
               //update level
-              this.gameProp.level += 1
-              levelText.setProp('level', levelConfig[this.gameProp.level].level)
-              this.displayWaveText()
-              //pause the game //when boss is die and level value is 1 
-              if(this.gameProp.level === 1) { //popUp UI display condition 
-                //
-                this.gameProp.isPause = true
-                clearGameAllObjs(this, eliminateEnemy)
-                this.render()
-                setTimeout(() => { popUpShopUI(this, eliminateEnemy) }, 1000)
-                
-              }
+              // this.gameProp.level += 1
+              // levelText.setProp('level', getInfiniteLevel(this.gameProp.level).level)
+              //pause the game //when boss is die
+              this.gameProp.isPause = true
+              clearGameAllObjs(this, this.eliminateEnemy)
+              this.render()
+              setTimeout(() => { popUpShopUI(this) }, 1000)
             }
             //
             //spawn buff
@@ -448,7 +450,7 @@ export class ShootingGame extends Game {
               spawnObj(this, 'buffItems', newCoin)
             })
           }
-          removeGameObjs('newGameObjs', OBJ)
+          this.removeGameObjs('newGameObjs', OBJ)
         }
         //
       }
@@ -520,15 +522,16 @@ const popUpShopUI = (gameInstance, removeEnemiesFn) => {
   ].map((fn, i) => checkCoinIsEnough(prices[i], fn))
   //
   const continueGame = () => {
-    gameInstance.gameProp.isPause = false
-    gameInstance.render()
     gameInstance.spawnEnemy = gameInstance.spawnEnemyInterval()
+    gameInstance.setGameProp('isPause', false)
+    gameInstance.render()
+    gameInstance.displayWaveText()
   }
   setUI(buyFns, prices, continueGame, gameInstance.gameProp.coin)
 }
 
 const initGameProp = {
-  level: 0, // array seq, display is level 1
+  level: 2, // array seq, display is level 1
   score: 0,
   coin: 0,
   playerLife: 10,
