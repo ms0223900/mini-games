@@ -22,9 +22,9 @@ import bullet01 from '../images/chick_190624-04.png'
 import bullet02 from '../images/chick_190624-03.png'
 import bullet03 from '../images/chick_190624-05.png'
 //
-import monster01 from '../images/monster01.png'
-import monster02 from '../images/monster02.png'
-import monster03 from '../images/monster03.png'
+import monster01 from '../images/enemy_01_190704.png'
+import monster02 from '../images/enemy_02_190704.png'
+import monster03 from '../images/enemy_03_190704.png'
 //
 import ground from '../images/ground.png'
 import building from '../images/building.png'
@@ -147,8 +147,8 @@ export const playerHeartsUI = hearts()
 console.log(playerHeartsUI)
 
 //
-const newEnemy = ( id='enemy', imgSrc, movement) => (x=300, y=300, cloneId=0, timerAttackFn) => 
-new Enemy({ x, y, id, cloneId, type: 'enemy', width: 80, height: 80, imgSrc, movement, timerAttackFn })
+const newEnemy = ( id='enemy', imgSrc, movement, width=80, height=80,) => (x=300, y=300, cloneId=0, timerAttackFn) => 
+new Enemy({ x, y, id, cloneId, type: 'enemy', width, height, imgSrc, movement, timerAttackFn })
 //
 export const boss = (x=700, y=300, cloneId=0, timerAttackFn, id='boss', imgSrc=monster03, movement) => {
   const b = new Enemy({ x, y, id, cloneId, width: 400, height: 400, imgSrc, movement, timerAttackFn, health: bossHealth, }) 
@@ -227,9 +227,12 @@ const bossLifeUI = (width=500, height=10) => {
 export const gameBossLifeUI = bossLifeUI()
 
 
-export const enemy01 = newEnemy('enemy01', monster01, { isMove: true, vx: -3, vy: 0, })
-export const enemy02 = newEnemy('enemy02', monster02, { isMove: true, vx: -5, vy: 0, })
-export const enemy03 = newEnemy('enemy03', monster03, { isMove: true, vx: -7, vy: 0, })
+export const enemy01 = 
+  newEnemy('enemy01', monster01, { isMove: true, vx: -3, vy: 0, }, 90, 60)
+export const enemy02 = 
+  newEnemy('enemy02', monster02, { isMove: true, vx: -5, vy: 0, }, 99, 90)
+export const enemy03 = 
+  newEnemy('enemy03', monster03, { isMove: true, vx: -7, vy: 0, }, 90, 82)
 export const enemies = [enemy01, enemy02, enemy03]
 
 export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0.33, 0.33, 0.33]) => {  
@@ -376,7 +379,7 @@ export const waveText = numericText(canvasSpec.width / 2, 220, '#222', 'wave', '
   .setProp('display', false) //default is not display
 //
 
-export const player = () => {
+export function Player() {
   const obj = new ControllableObj({
     // fillStyle: '#a0a',
     imgSrc: iconImg,
@@ -390,8 +393,11 @@ export const player = () => {
   })
   obj.attackFrequency = 600 //every 600ms can attack
   return obj
+}
+Player.prototype.reset = function() {
+  return Player()
 } 
-export const myPlayer = player()
+export const myPlayer = new Player()
 console.log(myPlayer)
 
 

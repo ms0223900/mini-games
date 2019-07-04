@@ -10,6 +10,7 @@ import {
   getNewObstacle,
   getNewBuffItem,
   myPlayer,
+  player,
   // enemy01,
   spawnRandomEnemies,
   boss,
@@ -40,6 +41,11 @@ import {
   uiImages, 
   bossHealth,
 } from './levelConfig'
+import { 
+  setUIcoinNow,
+  setShopUI, 
+  setGameOverUI,
+} from './gamePopupUI'
 import { spawnEnemy, spawnSingleEnemy } from './enemies'
 import { shootBullet } from './player'
 
@@ -51,55 +57,6 @@ const spawnObj = (gameInstance, originObjs, newObj) => {
   gameInstance.gameNewCloneId += 1
 }
 
-//
-let UI
-window.onload = () => {
-  UI = document.getElementById('UI')
-  // setUI()
-  console.log(UI)
-}
-//set UI
-const setUIcoinNow = (coinNow) => {
-  document.getElementById('coinNow').innerText = coinNow
-}
-export const setUI = (buyItemFn, itemPrices, setGameContinueFn, coinNow) => {
-  UI.style.display = 'block'
-  const newContainer = document.getElementsByClassName('ui-container')[0]
-  setUIcoinNow(coinNow)
-  while(newContainer.firstChild) {
-    newContainer.removeChild(newContainer.firstChild)
-  }
-  // newContainer.setAttribute('class', 'ui-container')
-  //
-  for (let i = 0; i < uiImages.length; i++) {
-    const image = uiImages[i]
-    const newImageContainer = document.createElement('div')
-    newImageContainer.setAttribute('class', 'image-container')
-    const imageEl = document.createElement('img')
-    imageEl.setAttribute('src', image)
-    const title = document.createElement('h3')
-    title.textContent = `$ ${ itemPrices[i] }`
-    newImageContainer.appendChild(imageEl)
-    newImageContainer.appendChild(title)
-    newContainer.appendChild(newImageContainer)
-    // document.getElementsByClassName('image-container')[i].onclick = () => window.alert('aa')
-  }
-  const imageContainers = document.getElementsByClassName('image-container')
-  for (let i = 0; i < imageContainers.length; i++) {
-    const el = imageContainers[i]
-    el.addEventListener('click', buyItemFn[i])
-  }
-  const continueBTN = document.getElementById('continueBTN')
-  continueBTN.addEventListener('click', () => {
-    setGameContinueFn()
-    UI.style.display = 'none'
-    const clonedBTN = continueBTN.cloneNode(true)
-    continueBTN.parentNode.replaceChild(clonedBTN, continueBTN)
-  })
-}
-
-
-
 
 export class ShootingGame extends Game {
   constructor(canvas, canvasSpec, initGameProp) {
@@ -110,6 +67,7 @@ export class ShootingGame extends Game {
     this.canShootBullet = true
     this.gamePropToSync = {}
     this.spawnObstacle = setInterval(() => this.spawnObstacleFn(), 3000)
+    // setGameOverUI(this, 'restartGame')
     // this.spawnBossBullets = setInterval(() => this.bossShootBullets(), 1000)
   }
   bossShootBullets() {
@@ -223,10 +181,14 @@ export class ShootingGame extends Game {
     setTimeout(() => {
       console.log('timeout')
       waveText.setProp('display', false)
-      this.gameProp.isPause = false
-      this.render()
-      this.spawnEnemy = this.spawnEnemyInterval()
+      this.startGame()
     }, 2000)
+  }
+  startGame() {
+    this.gameProp.isPause = false
+    this.render()
+    this.spawnObstacle = setInterval(() => this.spawnObstacleFn(), 3000)
+    this.spawnEnemy = this.spawnEnemyInterval()
   }
   toNextLevel() {
     if((this.gameProp.level + 1) % 3 === 0) { //lv 3, lv 6...
@@ -280,6 +242,27 @@ export class ShootingGame extends Game {
     }
     enemy.checkIsAlive && enemy.checkIsAlive()
   }
+  restartGame() {
+    // this.gameProp = initGameProp//
+    // .addPropToSync(healthText, 'health', 'playerLife')
+    // .addPropToSync(myPlayer, 'health', 'playerLife')
+    // .addPropToSync(playerHeartsUI, 'playerLife', 'playerLife')
+    // .addPropToSync(playerHeartsUI, 'lifeLimit', 'playerLifeLimit')
+    // .addPropToSync(scoreText, 'score', 'score')
+    // .addPropToSync(levelText, 'level', 'level')
+    // .addPropToSync(waveText, 'wave', 'level')
+    // .addPropToSync(coinText, 'coin', 'coin')
+    this.updateGameProp('playerLife', 10)
+    this.updateGameProp('playerLifeLimit', 10)
+    this.updateGameProp('score', 0)
+    this.updateGameProp('level', 0)
+    this.updateGameProp('coin', 0)
+    clearGameAllObjs(this, this.eliminateEnemy)
+    // myPlayer.reset()
+    myPlayer.__proto__.constructor = myPlayer
+    console.log(myPlayer)
+    this.startGame()
+  }
   //
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
@@ -289,7 +272,13 @@ export class ShootingGame extends Game {
     this.drawFPS()
 
     //game rule
-    
+    const checkGameIsOver = () => {
+      if(this.gameProp.playerLife <= 0) {
+        this.gameProp.isPause = true
+        setGameOverUI(this, 'restartGame', this.gameProp.score)
+      }
+    }
+    checkGameIsOver()
     //remove obj if it is out of bound
     const checkIsOutOfBounding = (e) => (
       e.x <= -100 || e.x >= this.canvasSpec.width + 100 ||
@@ -374,6 +363,7 @@ export class ShootingGame extends Game {
       }
       if(checkIsOutOfBounding(e) || checkPlayerHitByTarget(myPlayer, e)) {
         this.removeGameObjs('enemyBullets', e)
+        // console.log(myPlayer)
       } else {
         missileRedirect()
         e.render(this.ctx)
@@ -527,7 +517,7 @@ const popUpShopUI = (gameInstance, removeEnemiesFn) => {
     gameInstance.render()
     gameInstance.displayWaveText()
   }
-  setUI(buyFns, prices, continueGame, gameInstance.gameProp.coin)
+  setShopUI(buyFns, prices, continueGame, gameInstance.gameProp.coin)
 }
 
 const initGameProp = {

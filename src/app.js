@@ -28,6 +28,15 @@ export default () => {
         <div className={ 'ui-container' }></div>
         <button id={ 'continueBTN' }>{ 'CONTINUE' }</button>
       </div>
+      <div id={ 'gameOver' } style={{ display: uiDisplay }}>
+        <h2>{ 'GameOver!' }</h2>
+        <hr />
+        <p>
+          <span>{ 'Your result: ' }</span>
+          <span id={ 'result' }>0000</span>
+        </p>
+        <button id={ 'restartBTN' }>{ 'Restart!' }</button>
+      </div>
       <canvas 
         onClick={ 
           () => { 
