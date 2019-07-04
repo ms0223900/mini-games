@@ -49,6 +49,17 @@ import {
 import { spawnEnemy, spawnSingleEnemy } from './enemies'
 import { shootBullet } from './player'
 
+const initGameProp = {
+  level: 0, // array seq, display is level 1
+  score: 0,
+  coin: 0,
+  playerLife: 10,
+  playerLifeLimit: 10,
+  enemyAmountInThisLevel: 0,
+  bossFight: false,
+  isPause: false,
+}
+
 const spawnObj = (gameInstance, originObjs, newObj) => {
   gameInstance[originObjs] = [
     ...gameInstance.buffItems,
@@ -252,16 +263,19 @@ export class ShootingGame extends Game {
     // .addPropToSync(levelText, 'level', 'level')
     // .addPropToSync(waveText, 'wave', 'level')
     // .addPropToSync(coinText, 'coin', 'coin')
+    gameBossLifeUI.display = false
     this.updateGameProp('playerLife', 10)
     this.updateGameProp('playerLifeLimit', 10)
     this.updateGameProp('score', 0)
     this.updateGameProp('level', 0)
     this.updateGameProp('coin', 0)
+    this.gameProp = initGameProp
     clearGameAllObjs(this, this.eliminateEnemy)
     // myPlayer.reset()
     myPlayer.__proto__.constructor = myPlayer
     console.log(myPlayer)
     this.startGame()
+    console.log(this.gameProp)
   }
   //
   render() {
@@ -518,17 +532,6 @@ const popUpShopUI = (gameInstance, removeEnemiesFn) => {
     gameInstance.displayWaveText()
   }
   setShopUI(buyFns, prices, continueGame, gameInstance.gameProp.coin)
-}
-
-const initGameProp = {
-  level: 2, // array seq, display is level 1
-  score: 0,
-  coin: 0,
-  playerLife: 10,
-  playerLifeLimit: 10,
-  enemyAmountInThisLevel: 0,
-  bossFight: false,
-  isPause: false,
 }
 
 export const MyGame = (canvas, canvasSpec) => {
