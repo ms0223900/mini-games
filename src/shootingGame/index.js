@@ -34,6 +34,7 @@ import {
   getProbability,
   getSingleProbability, 
   getSpreadObjs,
+  getRandNum,
 } from '../game/gameFunc'
 import { 
   levelConfig,
@@ -50,11 +51,12 @@ import { spawnEnemy, spawnSingleEnemy } from './enemies'
 import { shootBullet } from './player'
 
 const initGameProp = {
-  level: 0, // array seq, display is level 1
+  level: 2, // array seq, display is level 1
   score: 0,
   coin: 0,
   playerLife: 10,
   playerLifeLimit: 10,
+  isNoHurtMode: true,
   enemyAmountInThisLevel: 0,
   bossFight: false,
   isPause: false,
@@ -105,9 +107,8 @@ export class ShootingGame extends Game {
           this.gameNewCloneId += 1
         }
         //multi spread bullets
-        const spawnSpreadBullets = () => {
-          const bulletsCount = 5 // deg from 150
-          const startDeg = 150
+        const spawnSpreadBullets = (OBJ=obj, bulletsCount=5, startDeg=150) => { //start from 150
+          console.log(OBJ.y)
           const degInterval = getIntervalDeg(90, startDeg, bulletsCount)
           for (let i = 0; i < bulletsCount; i++) {
             const degNow = startDeg + i * degInterval
@@ -115,7 +116,7 @@ export class ShootingGame extends Game {
             this.enemyBullets = [
               ...this.enemyBullets,
               getNewDirectiveBullet(
-                obj,
+                OBJ,
                 v.vx,
                 v.vy, 
                 this.gameNewCloneId + i,
@@ -125,7 +126,7 @@ export class ShootingGame extends Game {
             ]
           }
           // console.log(this.enemyBullets)
-          this.gameNewCloneId += 5
+          this.gameNewCloneId += bulletsCount
         }
         //missile
         const spawnMissileBullet = () => {
@@ -145,9 +146,59 @@ export class ShootingGame extends Game {
           setTimeout(() => { newBullet.isMissile = false }, 1000)
           this.gameNewCloneId += 1
         }
+        //
+        const spawnSpacingBullets = () => {
+          const bulletCount = 6
+          const skipPosIndex = getRandNum(bulletCount) // 0 ~ 6
+          for (let i = 0; i < bulletCount; i++) {
+            const posY = i * 75 //interval is 75
+            if(i === skipPosIndex) {
+              continue
+            }
+            this.enemyBullets = [
+              ...this.enemyBullets,
+              getNewBullet(
+                obj.x, 
+                posY, 
+                this.gameNewCloneId + i, 
+                'spacingBullet',
+                -5,
+                0
+              ), 
+            ]
+          }
+          this.gameNewCloneId += bulletCount
+        }
+        //
+        const spawnDelayMultiBullets = () => { //攻擊頻率？
+          const bulletCount = 7
+          for (let i = 0; i < bulletCount; i++) {
+            this.enemyBullets = [
+              ...this.enemyBullets,
+              getNewBullet(
+                260 * (i + 6), //x interval is 135 (90 * 1.5)
+                i * 75,  //y interval is 135 (90 * 1.5)
+                this.gameNewCloneId + i, 
+                'spacingBullet',
+                -5,
+                0
+              ), 
+            ]
+          }
+          this.gameNewCloneId += bulletCount
+        }
+        //time lag
+        const spawnTimeLagBullets = () => {
+          const OBJ = { ...obj, }
+          const fn = spawnSpreadBullets.bind(this, OBJ, 6, 144)
+          spawnSpreadBullets()
+          setTimeout(fn, 500) //timeout 時間差和攻擊頻率??
+        }
+        //
+        const spawnEnemyBullet = () => { spawnSingleEnemy(this, enemies[2]) }
         //random spawn bullets
-        const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet,() => { spawnSingleEnemy(this, enemies[2]) }]
-        const bulletProbability = [0.1, 0.2, 0.2, 0.5] //maybe differ from different boss
+        const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet, spawnEnemyBullet, spawnSpacingBullets, spawnDelayMultiBullets, spawnTimeLagBullets]
+        const bulletProbability = [0., 0., 0., 0., 0., 0., 1] //maybe differ from different boss
         const bulletRand = getProbability(bulletProbability)
         bulletFns[bulletRand]()
       }
@@ -295,14 +346,17 @@ export class ShootingGame extends Game {
     checkGameIsOver()
     //remove obj if it is out of bound
     const checkIsOutOfBounding = (e) => (
-      e.x <= -100 || e.x >= this.canvasSpec.width + 100 ||
-      e.y <= -100 || e.y >= this.canvasSpec.height + 100
+      e.x <= -100 || 
+      // e.x >= this.canvasSpec.width + 100 ||
+      e.y <= -100 || 
+      e.y >= this.canvasSpec.height + 100
     )
     const checkPlayerHitByTarget = (player, target) => {
       //player hit by target
       if(simpleCheckObjCollide(player, target) && !player.noHurt) {
         // console.log('hit!')
         //update game prop
+        if(this.gameProp.isNoHurtMode) { return }
         this.updateGameProp('playerLife', this.gameProp.playerLife - 1)
         player.setProp('blinkSpec', {
           ...player.blinkSpec,

@@ -268,7 +268,7 @@ export const spawnRandomEnemies = (x, y, cloneId, timerAttackFn, enemyPercent=[0
 //     vy: 0,
 //   } 
 // })
-export const getNewBullet = (x=0, y=0, newCloneId=0, id='bullet') => new BasicStaticImgObj({ 
+export const getNewBullet = (x=0, y=0, newCloneId=0, id='bullet', vx=10, vy=0) => new BasicStaticImgObj({ 
   id, 
   cloneId: newCloneId, 
   x, y, 
@@ -277,8 +277,7 @@ export const getNewBullet = (x=0, y=0, newCloneId=0, id='bullet') => new BasicSt
   rotate: 20,
   movement: {
     isMove: true,
-    vx: 10, 
-    vy: 0,
+    vx, vy,    
   } 
 })
 

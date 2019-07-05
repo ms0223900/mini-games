@@ -365,6 +365,9 @@ export const getProbability = (percentArr) => {
   }
 }
 
+export const getRandNum = (num) => //0 ~ num
+  Math.round(Math.random() * num)
+
 export const getSingleProbability = (percent=0.5) => { //from 0 ~ percent
   const rand = Math.round(Math.random() * 100) / 100
   if(rand >= 0 && rand <= percent) {
