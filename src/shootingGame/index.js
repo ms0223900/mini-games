@@ -51,12 +51,12 @@ import { spawnEnemy, spawnSingleEnemy } from './enemies'
 import { shootBullet } from './player'
 
 const initGameProp = {
-  level: 2, // array seq, display is level 1
+  level: 0, // array seq, display is level 1
   score: 0,
   coin: 0,
   playerLife: 10,
   playerLifeLimit: 10,
-  isNoHurtMode: true,
+  isNoHurtMode: false,
   enemyAmountInThisLevel: 0,
   bossFight: false,
   isPause: false,
@@ -89,6 +89,7 @@ export class ShootingGame extends Game {
       if(boss.length > 0) {
         const obj = boss[0]
         const basicV = 10
+        console.log(obj.attackTime)
 
         //single directive bullet
         const spawnDirectiveBullet = () => {
@@ -189,6 +190,7 @@ export class ShootingGame extends Game {
         }
         //time lag
         const spawnTimeLagBullets = () => {
+          //copy boss of that time
           const OBJ = { ...obj, }
           const fn = spawnSpreadBullets.bind(this, OBJ, 6, 144)
           spawnSpreadBullets()
@@ -198,9 +200,16 @@ export class ShootingGame extends Game {
         const spawnEnemyBullet = () => { spawnSingleEnemy(this, enemies[2]) }
         //random spawn bullets
         const bulletFns = [spawnDirectiveBullet, spawnSpreadBullets, spawnMissileBullet, spawnEnemyBullet, spawnSpacingBullets, spawnDelayMultiBullets, spawnTimeLagBullets]
-        const bulletProbability = [0., 0., 0., 0., 0., 0., 1] //maybe differ from different boss
+        const bulletProbability = [0., 0., 0., 0., 0.5, 0.5, 1] //maybe differ from different boss
+        //next attack is executed after each time
+        const bulletTimeIntervals = [1500, 1500, 1500, 1500, 2000, 3500, 2500, ]
         const bulletRand = getProbability(bulletProbability)
         bulletFns[bulletRand]()
+        console.log(bulletFns[bulletRand])
+        //change time of attack
+        clearInterval(obj.timerAttack)
+        obj.attackTime = bulletTimeIntervals[bulletRand]
+        obj.timerAttack = obj.timerAttackInit()
       }
     }
   }
@@ -305,15 +314,6 @@ export class ShootingGame extends Game {
     enemy.checkIsAlive && enemy.checkIsAlive()
   }
   restartGame() {
-    // this.gameProp = initGameProp//
-    // .addPropToSync(healthText, 'health', 'playerLife')
-    // .addPropToSync(myPlayer, 'health', 'playerLife')
-    // .addPropToSync(playerHeartsUI, 'playerLife', 'playerLife')
-    // .addPropToSync(playerHeartsUI, 'lifeLimit', 'playerLifeLimit')
-    // .addPropToSync(scoreText, 'score', 'score')
-    // .addPropToSync(levelText, 'level', 'level')
-    // .addPropToSync(waveText, 'wave', 'level')
-    // .addPropToSync(coinText, 'coin', 'coin')
     gameBossLifeUI.display = false
     this.updateGameProp('playerLife', 10)
     this.updateGameProp('playerLifeLimit', 10)

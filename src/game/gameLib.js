@@ -210,13 +210,15 @@ export class Enemy extends BasicStaticImgObj {
   constructor({ timerAttackFn=() => console.log('attack'), attackTime=1300, ...props }) {
     super(props)
     this.turnDegNow = 0
-    this.timerAttack = setInterval(() => {
+    this.attackTime = attackTime
+    this.timerAttackInit = () => setInterval(() => {
       timerAttackFn(this)
       this.statusNow = this.status.attack ? 'attack' : 'default'
       setTimeout(() => {
         this.statusNow = 'default'
       }, 500)
-    }, attackTime)
+    }, this.attackTime)
+    this.timerAttack = this.timerAttackInit()
   }
   checkIsAlive() {
     if(this.health <= 0) {
