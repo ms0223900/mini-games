@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
-import { MyGame } from './shootingGame'
+// import { MyGame } from './shootingGame'
+import DashGame from './dashGame'
 import { canvasSpec } from './config'
 import { shootBullet } from './shootingGame/player'
 import './styles/style.scss'
@@ -15,7 +16,8 @@ export default () => {
   })
   useEffect(() => {
     
-    myGame.current = MyGame(thisCanvas.current, canvasSpec)
+    // myGame.current = MyGame(thisCanvas.current, canvasSpec)
+    myGame.current = DashGame(thisCanvas.current, canvasSpec)
     myGame.current.render()
     console.log(myGame.current)
   }, [])
@@ -37,10 +39,10 @@ export default () => {
         </p>
         <button id={ 'restartBTN' }>{ 'Restart!' }</button>
       </div>
+      <h3><span>{ 'ui: ' }</span><span id={ 'uiText' }></span></h3>
       <canvas 
         onClick={ 
-          () => { 
-            shootBullet(myGame.current) } }
+          () => { shootBullet(myGame.current) } }
         style={{ boxShadow: '0px 0px 10px #111'}}
         width={ canvasSpec.width } 
         height={ canvasSpec.height } 

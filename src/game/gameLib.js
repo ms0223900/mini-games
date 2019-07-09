@@ -55,6 +55,15 @@ export class BasicObj {
       w: this.hitbox.w,
       h: this.hitbox.h
     }
+    // this.updateSpec = (xywh) => {
+    //   // console.log(this.hitboxOffset[xywh])
+    //   this.spec = {
+    //     ...this.spec,
+    //     [xywh]: (xywh === 'x' || xywh === 'y') ? 
+    //       this[xywh] + this.hitboxOffset[xywh] :
+    //       this.hitbox[xywh]
+    //   }
+    // }
     //movement
     this.movement = movement || {
       isMove: false,
@@ -83,6 +92,15 @@ export class BasicObj {
   }
   setProp(prop, value) {
     this[prop] = value
+    if(prop === 'x' || prop === 'y' || prop === 'width' || prop === 'heigth') {
+      if(prop === 'heigth') {
+        this.updateSpec('h')
+      }
+      if(prop === 'width') {
+        this.updateSpec('w')
+      }
+      this.updateSpec(prop)
+    }
     return this
   }
   getWallCollide(wallSpec) {
