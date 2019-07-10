@@ -2,7 +2,7 @@ import {
   Game
 } from '../game/gameLib'
 import {  
-  PF01, PF02, PF03,
+  PFs,
   myPlayer,
 } from './components'
 import { checkPlayerCollideWithPlatform } from './gameFn'
@@ -17,28 +17,28 @@ class DashingGame extends Game {
   constructor(canvas, canvasSpec, initGameProp) {
     super(canvas, canvasSpec, initGameProp)
   }
+  newGameEvent(e) {
+    myPlayer.moveByUser(e)
+  }
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
     this.drawBG()
     this.drawFPS()
     //
-    PF01.render(this.ctx)
-    PF02.render(this.ctx)
-    PF03.render(this.ctx)
-    //
+    const platforms = PFs
     myPlayer.render(this.ctx)
     //
-    const collideRes = checkPlayerCollideWithPlatform(myPlayer, PF01)
-    if(collideRes) {
-      if(UITextBox) {
-        UITextBox.innerText = collideRes
+    //
+    platforms.forEach(pf => {
+      pf.render(this.ctx)
+      const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
+      if(collideRes) {
+        if(UITextBox) {
+          UITextBox.innerText = collideRes
+        }
+        myPlayer.collideWithPlatform(pf.y)
       }
-      myPlayer.setProp('movement', {
-        ...myPlayer.movement,
-        isMove: false,
-      })
-      myPlayer.setProp('y', PF01.y - myPlayer.height)
-    }
+    })
     
     
     

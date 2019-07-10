@@ -11,8 +11,9 @@ export const checkPlayerCollideWithPlatform = (player, obj) => {
     objB: { x: x2 + w2, y: y2 },
   }
   //
+  //include complete intersection condition
   if(points.playerB_next.x >= points.objA.x && points.playerA_next.x <= points.objB.x) {
-    if(points.playerA.y < points.objA.y && points.playerA_next.y >= points.objA.y) {
+    if(points.playerA.y <= points.objA.y && points.playerA_next.y >= points.objA.y) {
       return true
     }
     return false

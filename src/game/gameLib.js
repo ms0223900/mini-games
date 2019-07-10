@@ -55,15 +55,6 @@ export class BasicObj {
       w: this.hitbox.w,
       h: this.hitbox.h
     }
-    // this.updateSpec = (xywh) => {
-    //   // console.log(this.hitboxOffset[xywh])
-    //   this.spec = {
-    //     ...this.spec,
-    //     [xywh]: (xywh === 'x' || xywh === 'y') ? 
-    //       this[xywh] + this.hitboxOffset[xywh] :
-    //       this.hitbox[xywh]
-    //   }
-    // }
     //movement
     this.movement = movement || {
       isMove: false,
@@ -78,6 +69,7 @@ export class BasicObj {
     //
     this.wall = {
       useWall,
+      useBounce: true,
       spec: {
         x: 0,
         y: 0,
@@ -92,14 +84,21 @@ export class BasicObj {
   }
   setProp(prop, value) {
     this[prop] = value
-    if(prop === 'x' || prop === 'y' || prop === 'width' || prop === 'heigth') {
-      if(prop === 'heigth') {
-        this.updateSpec('h')
+    if(prop === 'x' || prop === 'y' || prop === 'width' || prop === 'height') {
+      const { x, y, w, h } = this.spec
+      if(prop === 'height') {
+        this.updateSpec(x, y, w, value)
       }
       if(prop === 'width') {
-        this.updateSpec('w')
+        this.updateSpec(x, y, value, h)
       }
-      this.updateSpec(prop)
+      if(prop === 'x') {
+        this.updateSpec(value, y, w, h)
+      }
+      if(prop === 'y') {
+        this.updateSpec(x, value, w, h)
+      }
+      //
     }
     return this
   }
@@ -111,21 +110,31 @@ export class BasicObj {
       const collideRes = this.wall && checkObjInsideCollideWithWall(this, this.wall)
       if(collideRes) {
         if(collideRes.includes('xAxis')) {
+          this.x < this.wall.spec.w / 2 ?
+            this.setProp('x', this.wall.spec.w - this.width - 10) :
+            this.setProp('x', 1)
           this.movement = {
             ...this.movement,
-            vx: this.movement.vx * -1
+            vx: this.wall.useBounce ? this.movement.vx * -1 : this.movement.vx
           }
         }
+        //
         if(collideRes.includes('yAxis')) {
           this.movement = {
             ...this.movement,
-            vy: this.movement.vy * -1
+            vy: this.wall.useBounce ? this.movement.vy * -1 : 0
           }
+          // this.y < this.wall.spec.h / 2 ? 
+          //   this.setProp('y', 1) : 
+          //   this.setProp('y', this.wall.spec.h - this.height)
+          // //
+          // this.setProp('isInAir', false)
         }
       }
     }
   }
   updateSpec(x, y, w, h=this.h) {
+    // console.log(x, y, w, h)
     this.spec = {
       x: x + this.hitboxOffset.x,
       y: y + this.hitboxOffset.y,
@@ -134,13 +143,16 @@ export class BasicObj {
     }
   }
   move() {
+    const { vx, vy, ay } = this.movement
     this.newBehavior.forEach(b => b(this))
     if(this.movement.isMove) {
-      
       this.wallBounce()
+      if(this.useGravity) {
+        this.movement.vy += ay
+      }
       //
-      const newX = this.x + this.movement.vx
-      const newY = this.y + this.movement.vy
+      const newX = this.x + vx
+      const newY = this.y + vy
       this.x = newX
       this.y = newY
       this.updateSpec(newX, newY)
@@ -216,9 +228,8 @@ export class BasicStaticImgObj extends BasicObj {
       this.width, 
       this.height
     )
-    
     if(this.dev) {
-      ctx.fillRect(x, y, w, h)
+      ctx.fillRect(0, 0, w, h)
     }
     ctx.restore()
   }
@@ -354,6 +365,11 @@ export class WanderObj extends BasicObj {
   }
 }
 
+export class DashPlayer extends BasicObj {
+
+}
+
+
 export class Ball extends BasicObj {
   constructor({ r=20, ...props }) {
     super(props)
@@ -389,14 +405,13 @@ export class collidableObj extends BasicObj {
 }
 //-----------------------
 //custom components
-const myBall = new Ball({ x: 440, y: 40, fillStyle: '#a00' })
-myBall.setProp('movement', {
-  ...myBall.movement,
-  isMove: false,
-  vx: -10,
-  vy: 10,
-})
-// const myRect = new BasicObj({ x: 200, y: 0, width: 100, height: 100, fillStyle: '#3a0', collideObjs: [myBall] })
+// const myBall = new Ball({ x: 440, y: 40, fillStyle: '#a00' })
+// myBall.setProp('movement', {
+//   ...myBall.movement,
+//   isMove: false,
+//   vx: -10,
+//   vy: 10,
+// })
 const enemy = (x=300, y=300, newCloneId=0) => 
   new BasicObj({ x, y, id: 'enemy', cloneId: newCloneId, width: 60, height: 60, fillStyle: '#a90', })
 const getNewBullet = (x=0, y=0, newCloneId=0) => new Ball({ 
@@ -412,23 +427,23 @@ const getNewBullet = (x=0, y=0, newCloneId=0) => new Ball({
   } 
 })
 //score text
-const scoreText = new BasicText({ x: 400, y: 20, text: '', fillStyle: '#1a0' })
-scoreText
-  .setProp('score', 0)
-  .setProp('basicTxt', 'score: ')
-  .addUpdateRule((e) => {
-    e.text = e.basicTxt + e.score
-  })
-  .addPropForUpdate('score')
-const healthText = new BasicText({ x: 100, y: 20, text: '', fillStyle: '#a00' })
-  healthText
-    .setProp('health', 10)
-    .setProp('basicTxt', 'health: ')
-    .addUpdateRule((e) => {
-      e.text = e.basicTxt + e.health
-    })
-    .addPropForUpdate('health')
-console.log(scoreText)
+// const scoreText = new BasicText({ x: 400, y: 20, text: '', fillStyle: '#1a0' })
+// scoreText
+//   .setProp('score', 0)
+//   .setProp('basicTxt', 'score: ')
+//   .addUpdateRule((e) => {
+//     e.text = e.basicTxt + e.score
+//   })
+//   .addPropForUpdate('score')
+// const healthText = new BasicText({ x: 100, y: 20, text: '', fillStyle: '#a00' })
+//   healthText
+//     .setProp('health', 10)
+//     .setProp('basicTxt', 'health: ')
+//     .addUpdateRule((e) => {
+//       e.text = e.basicTxt + e.health
+//     })
+//     .addPropForUpdate('health')
+// console.log(scoreText)
 
 
 
@@ -455,11 +470,14 @@ export class ControllableObj extends BasicStaticImgObj {
     super(props)
     this.movement = {
       ...this.movement,
-      vStandard: 4,
+      vStandard: 6,
       vx: 0,
       vy: 0,
+      ay: 0.15, //gravity
       moveSet: [],
     }
+    this.isInAir = false
+    this.useGravity = true
     this.attackType = 'default'
     //
     this.noHurt = false
@@ -518,36 +536,37 @@ export class ControllableObj extends BasicStaticImgObj {
     const checkMoveSet = (keyCode) => this.movement.moveSet.includes(keyCode)
     // console.log(this.movement.moveSet)
     //move by keyCode
-    // if(keyCode === 37) {
-    //   this.movement.vy = 0
-    //   this.movement.vx = this.movement.vStandard * -1
-    // } else if(keyCode === 38) {
-    //   this.movement.vx = 0
-    //   this.movement.vy = this.movement.vStandard * -1
-    // } else if(keyCode === 39) {
-    //   this.movement.vy = 0
-    //   this.movement.vx = this.movement.vStandard * 1
-    //   // this.x += 6
-    // } else if(keyCode === 40) {
-    //   this.movement.vx = 0
-    //   this.movement.vy = this.movement.vStandard * 1
-    // }
-
     if(checkMoveSet(37) || checkMoveSet(65)) {
-      this.movement.vy = 0
+      console.log('left')
+      // this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * -1
-    } else if(checkMoveSet(38) || checkMoveSet(87)) {
-      this.movement.vx = 0
-      this.movement.vy = this.movement.vStandard * -1
-    } else if(checkMoveSet(39) || checkMoveSet(68)) {
-      this.movement.vy = 0
+    }  
+    if(checkMoveSet(39) || checkMoveSet(68)) {
+      // this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
       // this.x += 6
-    } else if(checkMoveSet(40) || checkMoveSet(83)) {
-      this.movement.vx = 0
+    }
+    if(checkMoveSet(38) || checkMoveSet(87)) {
+      console.log('up')
+      // this.movement.vx = 0
+      this.movement.vy = this.isInAir ? 
+        this.movement.vy : this.movement.vStandard * -1
+      this.setProp('isInAir', true)
+    }
+    if(checkMoveSet(40) || checkMoveSet(83)) {
+      console.log('down')
+      // this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
     }
     // console.log(keyCode)
+  }
+  collideWithPlatform(platformY) {
+    this.setProp('movement', {
+      ...this.movement,
+      vy: 0,
+    })
+    this.setProp('y', platformY - this.height)
+    this.setProp('isInAir', false)
   }
 }
 export class GroupObjs {
