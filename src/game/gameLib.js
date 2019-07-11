@@ -110,9 +110,10 @@ export class BasicObj {
       const collideRes = this.wall && checkObjInsideCollideWithWall(this, this.wall)
       if(collideRes) {
         if(collideRes.includes('xAxis')) {
-          this.x < this.wall.spec.w / 2 ?
-            this.setProp('x', this.wall.spec.w - this.width - 10) :
-            this.setProp('x', 1)
+          // this.x < this.wall.spec.w / 2 ?
+          //   this.setProp('x', this.wall.spec.w - this.width - 10) :
+          //   this.setProp('x', 1)
+          this.x < this.wall.spec.w / 2 && this.setProp('x', 1)
           this.movement = {
             ...this.movement,
             vx: this.wall.useBounce ? this.movement.vx * -1 : this.movement.vx
@@ -172,16 +173,16 @@ export class BasicObj {
       this.blinkSpec = initBlink
     }
   }
-  drawOnCanvas(ctx) {
+  drawOnCanvas(ctx, x, y) {
     ctx.save()
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
-    ctx.fillRect(0, 0, this.width, this.height)
+    ctx.fillRect(x, y, this.width, this.height)
     ctx.stroke()
     ctx.fill()
     ctx.restore()
   }
-  draw(ctx) {
+  draw(ctx, x=0, y=0) {
     ctx.save()
     ctx.beginPath()
     ctx.globalAlpha = this.opacity
@@ -191,14 +192,14 @@ export class BasicObj {
     if(this.blinkSpec.useBlink) {
       this.blinkEffect(ctx)
     }
-    this.drawOnCanvas(ctx)
+    this.drawOnCanvas(ctx, x, y)
     ctx.closePath()
     ctx.restore()
   }
-  render(ctx) {
+  render(ctx, x, y) {
     this.move()
     // this.checkCollide()
-    this.draw(ctx)
+    this.draw(ctx, x, y)
   }
 }
 
@@ -214,8 +215,8 @@ export class BasicStaticImgObj extends BasicObj {
     this.image = new Image()
     this.image.src = this.imgSrc
   }
-  drawOnCanvas(ctx) {
-    const { x, y, w, h } = this.spec
+  drawOnCanvas(ctx, x, y) {
+    const { w, h } = this.spec
     const statusNow = this.statusNow
     const imgNow = this.status[statusNow]
     // if(this.bounceStart) { this.bounceLoop() }
@@ -229,7 +230,7 @@ export class BasicStaticImgObj extends BasicObj {
       this.height
     )
     if(this.dev) {
-      ctx.fillRect(0, 0, w, h)
+      ctx.fillRect(x, y, w, h)
     }
     ctx.restore()
   }
@@ -510,12 +511,11 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.movement.isMove = false
       const { moveSet } = this.movement
       this.movement.moveSet = moveSet.filter(m => m !== keyCode)
-      
       if(this.movement.moveSet.length === 0) {
         this.movement = {
           ...this.movement,
           vx: 0,
-          vy: 0,
+          vy: this.isInAir ? this.movement.vy / 2 : 0,
         }
       }
     })
@@ -547,11 +547,17 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.x += 6
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
-      console.log('up')
+      // console.log('up')
       // this.movement.vx = 0
-      this.movement.vy = this.isInAir ? 
-        this.movement.vy : this.movement.vStandard * -1
-      this.setProp('isInAir', true)
+      if(this.useGravity) {
+        if(!this.isInAir) {
+          console.log('up')
+          this.movement.vy = this.movement.vStandard * -1
+        }
+        this.setProp('isInAir', true)
+      } else {
+        this.movement.vy = this.movement.vStandard * -1
+      }
     }
     if(checkMoveSet(40) || checkMoveSet(83)) {
       console.log('down')

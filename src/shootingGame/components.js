@@ -390,6 +390,7 @@ export function Player() {
       spread: iconImg02,
     },
   })
+  obj.useGravity = false
   obj.attackFrequency = 600 //every 600ms can attack
   return obj
 }
