@@ -479,6 +479,7 @@ export class ControllableObj extends BasicStaticImgObj {
     }
     this.isInAir = false
     this.useGravity = true
+    this.attachWall = false
     this.attackType = 'default'
     //
     this.noHurt = false
@@ -537,11 +538,13 @@ export class ControllableObj extends BasicStaticImgObj {
     // console.log(this.movement.moveSet)
     //move by keyCode
     if(checkMoveSet(37) || checkMoveSet(65)) {
-      console.log('left')
+      console.log(this.attachWall)
+      // console.log('left')
       // this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * -1
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
+      console.log(this.attachWall)
       // this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
       // this.x += 6
@@ -549,9 +552,13 @@ export class ControllableObj extends BasicStaticImgObj {
     if(checkMoveSet(38) || checkMoveSet(87)) {
       // console.log('up')
       // this.movement.vx = 0
+      if(checkMoveSet(39) || checkMoveSet(68) || checkMoveSet(37) || checkMoveSet(65)) {
+        this.attachWall && this.setProp('isInAir', false)
+      }
+      
       if(this.useGravity) {
         if(!this.isInAir) {
-          console.log('up')
+          // console.log('up')
           this.movement.vy = this.movement.vStandard * -1
         }
         this.setProp('isInAir', true)
@@ -560,7 +567,7 @@ export class ControllableObj extends BasicStaticImgObj {
       }
     }
     if(checkMoveSet(40) || checkMoveSet(83)) {
-      console.log('down')
+      // console.log('down')
       // this.movement.vx = 0
       this.movement.vy = this.movement.vStandard * 1
     }

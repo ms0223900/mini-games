@@ -1,11 +1,17 @@
+/* eslint-disable no-unused-vars */
 import {  
   Game
 } from '../game/gameLib'
 import {  
   PFs,
+  WBs,
   myPlayer,
 } from './components'
-import { checkPlayerCollideWithPlatform } from './gameFn'
+import { 
+  checkPlayerCollideWithPlatform,
+  checkSolidBlockCollide, 
+} from './gameFn'
+import { simpleCheckObjCollide } from '../game/gameFunc'
 
 let UITextBox
 window.onload = () => {
@@ -60,13 +66,14 @@ class DashingGame extends Game {
       y: myPlayer.y + myPlayer.height / 2,
     }
     camera.updatePos(playerCenter.x, playerCenter.y)
-    console.log(camera)
+    // console.log(camera)
     //
     //
     //jump through platform type
     platforms.forEach(pf => {
       pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
       const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
+      // console.log(collideRes)
       if(collideRes) {
         if(UITextBox) {
           UITextBox.innerText = collideRes
@@ -74,8 +81,34 @@ class DashingGame extends Game {
         myPlayer.collideWithPlatform(pf.y)
       }
     })
+
+    myPlayer.attachWall = false
     //solid wall
-    
+    WBs.forEach(wb => {
+      wb.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      const collideRes = checkSolidBlockCollide(myPlayer, wb)
+      // console.log(collideRes)
+      if(collideRes === 'bottom' || collideRes === 'top') {
+        // myPlayer.attachWall = false
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          vy: 0,
+        })
+        collideRes === 'bottom' ? 
+          myPlayer.setProp('y', wb.y - myPlayer.height) :
+          myPlayer.setProp('y', wb.y + wb.height)
+        collideRes === 'bottom' && myPlayer.setProp('isInAir', false)
+      } else if(collideRes === 'left' || collideRes === 'right') {
+        myPlayer.attachWall = true
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          vx: 0,
+        })
+        collideRes === 'left' ? 
+          myPlayer.setProp('x', wb.x + wb.width) :
+          myPlayer.setProp('x', wb.x - myPlayer.width)
+      }
+    })
     myPlayer.render(this.ctx, -camera.offsetX, -camera.offsetY)
     
     
