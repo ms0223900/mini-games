@@ -5,11 +5,14 @@ import {
 import {  
   PFs,
   WBs,
+  Slopes,
   myPlayer,
 } from './components'
 import { 
   checkPlayerCollideWithPlatform,
   checkSolidBlockCollide, 
+  checkLineIntersection,
+  getDistance,
 } from './gameFn'
 import { simpleCheckObjCollide } from '../game/gameFunc'
 
@@ -26,12 +29,14 @@ export function Camera(maxWidth, maxHeight) {
     originCenterY: maxHeight / 2,
     x: maxWidth / 2,
     y: maxHeight / 2,
+    vx: 0,
+    vy: 0,
     offsetX: 0,
     offsetY: 0,
     updatePos(x, y) {
       if(x >= this.w / 2) {
         this.x = x
-        this.offsetX = this.x - this.originCenterX
+        this.offsetX = this.x - this.originCenterX 
       } else {
         this.offsetX = 0
       }
@@ -41,15 +46,29 @@ export function Camera(maxWidth, maxHeight) {
       } else {
         this.offsetY = 0
       }
+    },
+    move() {
+      this.x += this.vx
+      this.offsetX = this.x - this.originCenterX
+      this.y += this.vy
+      this.offsetY = this.y - this.originCenterY
+    },
+    detectIsOutofBound(obj) {
+      if(obj.x < this.x - this.w / 2 || obj.x > this.x + this.w / 2 ||
+        obj.y < this.y - this.h / 2 || obj.y > this.y + this.h / 2) {
+          return true
+        } 
+      return false
     }
   })
 }
-
 const camera = Camera(960, 540)
+//
 
 class DashingGame extends Game {
   constructor(canvas, canvasSpec, initGameProp) {
     super(canvas, canvasSpec, initGameProp)
+    this.isPause = false
     // this.camera = Camera(canvasSpec.width, canvasSpec.height)
   }
   newGameEvent(e) {
@@ -65,29 +84,31 @@ class DashingGame extends Game {
       x: myPlayer.x + myPlayer.width / 2,
       y: myPlayer.y + myPlayer.height / 2,
     }
+    //camera move defined by player
     camera.updatePos(playerCenter.x, playerCenter.y)
+    // camera.vx = 2
+    // camera.move()
+    // if(camera.detectIsOutofBound(myPlayer)) {
+    //   this.isPause = true
+    //   window.alert('you die.')
+    // }
     // console.log(camera)
     //
-    //
-    //jump through platform type
-    platforms.forEach(pf => {
-      pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
-      const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
-      // console.log(collideRes)
-      if(collideRes) {
-        if(UITextBox) {
-          UITextBox.innerText = collideRes
-        }
-        myPlayer.collideWithPlatform(pf.y)
-      }
-    })
-
+    
     myPlayer.attachWall = false
     //solid wall
     WBs.forEach(wb => {
       wb.render(this.ctx, -camera.offsetX, -camera.offsetY)
       const collideRes = checkSolidBlockCollide(myPlayer, wb)
       // console.log(collideRes)
+      //collide result
+      // if(collideRes) {
+      //   myPlayer.movement = {
+      //     ...myPlayer.movement,
+      //     baseVx: 0,
+      //     baseVy: 0,
+      //   }
+      // }
       if(collideRes === 'bottom' || collideRes === 'top') {
         // myPlayer.attachWall = false
         myPlayer.setProp('movement', {
@@ -109,10 +130,71 @@ class DashingGame extends Game {
           myPlayer.setProp('x', wb.x - myPlayer.width)
       }
     })
+    myPlayer.movement.slopeX = 1
+    myPlayer.movement.slopeY = 0
+    myPlayer.useGravity = true
+    //
+    Slopes.forEach(sl => {
+      sl.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      const myPlayerBottomLine = [
+        { x: myPlayer.x, y: myPlayer.y + myPlayer.height },
+        { x: myPlayer.x + myPlayer.width, y: myPlayer.y + myPlayer.height },
+      ]
+      const collideRes = checkLineIntersection(myPlayerBottomLine, sl.slopeLine)
+      if(collideRes) {
+        // myPlayer.setProp('x', collideRes.x - myPlayer.width)
+        myPlayer.setProp('x', collideRes.x - myPlayer.width)
+        myPlayer.setProp('y', collideRes.y - myPlayer.height)
+        const slopeBotttom = {
+          a: { x: sl.x, y: sl.y + sl.height },
+          b: { x: sl.x + sl.width, y: sl.y + sl.height }
+        }
+        const slopeSide = {
+          a: { x: sl.x + sl.width, y: sl.y },
+          b: { x: sl.x + sl.width, y: sl.y + sl.height }
+        }
+        const slopeXRatio = getDistance(slopeBotttom.a, slopeBotttom.b) / getDistance(sl.slopeLine[0], sl.slopeLine[1])
+        const slopeYRatio = getDistance(slopeSide.a, slopeSide.b) / getDistance(sl.slopeLine[0], sl.slopeLine[1])
+        //
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          // vy: 0,
+          slopeX: slopeXRatio, 
+          slopeY: slopeYRatio,
+        })
+        // myPlayer.isInAir = false
+        myPlayer.useGravity = false
+      }
+    })
+    //
+    //jump through platform type
     myPlayer.render(this.ctx, -camera.offsetX, -camera.offsetY)
-    
-    
-    requestAnimationFrame( this.render.bind(this) )
+    myPlayer.movement = {
+      ...myPlayer.movement,
+      baseVx: 0,
+      baseVy: 0,
+    }
+    platforms.forEach(pf => {
+      pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
+      // console.log(collideRes)
+      if(collideRes) {
+        myPlayer.collideWithPlatform(pf.y)
+        //moving platform
+        if(pf.id === 'movingPlatform') {
+          //temp platform only horizontal movement
+          myPlayer.movement = {
+            ...myPlayer.movement,
+            baseVx: pf.movement.vx,
+            baseVy: pf.movement.vy
+          }
+        }
+      }
+    })
+    //
+
+    //
+    !this.isPause && requestAnimationFrame( this.render.bind(this) )
   }
 }
 export default (canvas, canvasSpec) => {

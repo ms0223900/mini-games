@@ -58,7 +58,10 @@ export class BasicObj {
     //movement
     this.movement = movement || {
       isMove: false,
+      slope: 0,
       vBasic: 6,
+      baseVx: 0, //基準座標速度vx
+      baseVy: 0, //基準座標速度vy
       vx: 4,
       vy: 4,
       ax: 0,
@@ -144,7 +147,7 @@ export class BasicObj {
     }
   }
   move() {
-    const { vx, vy, ay } = this.movement
+    const { baseVx, baseVy, vx, vy, ay } = this.movement
     this.newBehavior.forEach(b => b(this))
     if(this.movement.isMove) {
       this.wallBounce()
@@ -152,8 +155,8 @@ export class BasicObj {
         this.movement.vy += ay
       }
       //
-      const newX = this.x + vx
-      const newY = this.y + vy
+      const newX = this.x + baseVx + vx
+      const newY = this.y + baseVy + vy
       this.x = newX
       this.y = newY
       this.updateSpec(newX, newY)
@@ -202,6 +205,30 @@ export class BasicObj {
     this.draw(ctx, x, y)
   }
 }
+
+//default type is right and down triangle
+export class Triangle extends BasicObj {
+  constructor(props) {
+    super(props)
+    this.slopeLine = [
+      { x: this.x, y: this.y + this.height },
+      { x: this.x + this.width, y: this.y },
+    ]
+  }
+  drawOnCanvas(ctx, x, y) {
+    ctx.save()
+    ctx.fillStyle = this.fillStyle
+    ctx.strokeStyle = this.strokeStyle
+    // ctx.fillRect(x, y, this.width, this.height)
+    ctx.moveTo(x, y + this.height)
+    ctx.lineTo(x + this.width, y + this.height)
+    ctx.lineTo(x + this.width, y)
+    ctx.stroke()
+    ctx.fill()
+    ctx.restore()
+  }
+}
+
 
 export class BasicStaticImgObj extends BasicObj {
   constructor({ opacity=1, imgSrc, status, ...props }) {
@@ -474,7 +501,7 @@ export class ControllableObj extends BasicStaticImgObj {
       vStandard: 6,
       vx: 0,
       vy: 0,
-      ay: 0.15, //gravity
+      ay: 0.2, //gravity
       moveSet: [],
     }
     this.isInAir = false
@@ -541,17 +568,24 @@ export class ControllableObj extends BasicStaticImgObj {
       console.log(this.attachWall)
       // console.log('left')
       // this.movement.vy = 0
-      this.movement.vx = this.movement.vStandard * -1
+      const { slopeX, slopeY } = this.movement
+      this.movement.vx = this.movement.vStandard * slopeX * -1
+      this.movement.vy = this.movement.vStandard * slopeY * 1
+      console.log(this.movement.vx, this.movement.vy)
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
+      // console.log('right')
       console.log(this.attachWall)
       // this.movement.vy = 0
-      this.movement.vx = this.movement.vStandard * 1
-      // this.x += 6
+      const { slopeX, slopeY } = this.movement
+      this.movement.vx = this.movement.vStandard * slopeX * 1
+      this.movement.vy = this.movement.vStandard * slopeY * -1
+      console.log(this.movement.vx, this.movement.vy)
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
       // console.log('up')
       // this.movement.vx = 0
+      //wall jump
       if(checkMoveSet(39) || checkMoveSet(68) || checkMoveSet(37) || checkMoveSet(65)) {
         this.attachWall && this.setProp('isInAir', false)
       }

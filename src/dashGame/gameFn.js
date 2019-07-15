@@ -118,3 +118,28 @@ export const checkSolidBlockCollide = (player, block) => {
     if(res) { return sides[i] }
   } return false
 }
+
+export const checkLineIntersection = (line1, line2) => {
+  const [a, b] = line1;
+  const [c, d] = line2;
+  const dii = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x);
+  if (dii === 0) {
+    return false;
+  }
+  const u = ((c.x - a.x) * (d.y - c.y) - (c.y - a.y) * (d.x - c.x)) / dii;
+  const v = ((c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x)) / dii;
+  if (v < 0 || u > 1) {
+    return false;
+  }
+  if (v > 1 || u < 0) {
+    return false;
+  }
+  return {
+    x: a.x + u * (b.x - a.x),
+    y: a.y + u * (b.y - a.y)
+  };
+};
+
+export const getDistance = (a, b) => (
+  Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y))
+)
