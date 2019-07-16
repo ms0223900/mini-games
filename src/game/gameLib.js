@@ -229,6 +229,34 @@ export class Triangle extends BasicObj {
   }
 }
 
+const initPoints = [
+  { x: 100, y: 300, },
+  { x: 150, y: 300, },
+  { x: 200, y: 250, },
+  { x: 250, y: 250, },
+]
+export class PolyLine extends BasicObj {
+  constructor({ points=initPoints, ...props}) {
+    super(props)
+    this.points = points
+  }
+  drawOnCanvas(ctx, x, y) {
+    ctx.save()
+    ctx.fillStyle = this.fillStyle
+    ctx.strokeStyle = this.strokeStyle
+    ctx.lineWidth = 5
+    // ctx.fillRect(x, y, this.width, this.height)
+    for (let i = 0; i < this.points.length; i++) {
+      i === 0 ? 
+      ctx.moveTo(x + this.points[i].x, y + this.points[i].y) :
+      ctx.lineTo(x + this.points[i].x, y + this.points[i].y)
+    }
+    ctx.stroke()
+    // ctx.fill()
+    ctx.restore()
+  }
+}
+
 
 export class BasicStaticImgObj extends BasicObj {
   constructor({ opacity=1, imgSrc, status, ...props }) {

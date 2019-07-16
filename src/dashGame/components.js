@@ -1,6 +1,7 @@
 import { 
   BasicObj, 
   Triangle,
+  PolyLine,
   ControllableObj 
 } from '../game/gameLib'
 import { canvasSpec } from '../config'
@@ -84,7 +85,15 @@ export const Slope = (width=80, height=80, x, y, cloneId) => {
     x, y, width, height,
     fillStyle: '#af0',
   })
+  return obj
+}
 
+export const SlopeLines = (x, y, cloneId) => {
+  const obj = new PolyLine({
+    id: 'slopeLines', cloneId,
+    x, y,
+    strokeStyle: '#111',
+  })
   return obj
 }
 
@@ -151,10 +160,11 @@ export const WB05 = WallBlock(800, 200, 1100, 500)
 export const WBs = [WB01, WB02, WB03, WB04, WB05]
 
 export const S01 = Slope(100, 100, 1200, 420)
-export const Slopes = [S01]
+export const SL01 = SlopeLines(200, 200)
+export const Slopes = [S01, SL01]
 console.log(S01)
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(1200, 200)
+export const myPlayer = Player(100, 200)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

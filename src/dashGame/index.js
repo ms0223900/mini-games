@@ -136,35 +136,35 @@ class DashingGame extends Game {
     //
     Slopes.forEach(sl => {
       sl.render(this.ctx, -camera.offsetX, -camera.offsetY)
-      const myPlayerBottomLine = [
-        { x: myPlayer.x, y: myPlayer.y + myPlayer.height },
-        { x: myPlayer.x + myPlayer.width, y: myPlayer.y + myPlayer.height },
-      ]
-      const collideRes = checkLineIntersection(myPlayerBottomLine, sl.slopeLine)
-      if(collideRes) {
-        // myPlayer.setProp('x', collideRes.x - myPlayer.width)
-        myPlayer.setProp('x', collideRes.x - myPlayer.width)
-        myPlayer.setProp('y', collideRes.y - myPlayer.height)
-        const slopeBotttom = {
-          a: { x: sl.x, y: sl.y + sl.height },
-          b: { x: sl.x + sl.width, y: sl.y + sl.height }
-        }
-        const slopeSide = {
-          a: { x: sl.x + sl.width, y: sl.y },
-          b: { x: sl.x + sl.width, y: sl.y + sl.height }
-        }
-        const slopeXRatio = getDistance(slopeBotttom.a, slopeBotttom.b) / getDistance(sl.slopeLine[0], sl.slopeLine[1])
-        const slopeYRatio = getDistance(slopeSide.a, slopeSide.b) / getDistance(sl.slopeLine[0], sl.slopeLine[1])
-        //
-        myPlayer.setProp('movement', {
-          ...myPlayer.movement,
-          // vy: 0,
-          slopeX: slopeXRatio, 
-          slopeY: slopeYRatio,
-        })
-        // myPlayer.isInAir = false
-        myPlayer.useGravity = false
-      }
+      // const myPlayerBottomLine = [
+      //   { x: myPlayer.x, y: myPlayer.y + myPlayer.height },
+      //   { x: myPlayer.x + myPlayer.width, y: myPlayer.y + myPlayer.height },
+      // ]
+      // const collideRes = checkLineIntersection(myPlayerBottomLine, sl.slopeLine)
+      // if(collideRes) {
+      //   // myPlayer.setProp('x', collideRes.x - myPlayer.width)
+      //   myPlayer.setProp('x', collideRes.x - myPlayer.width)
+      //   myPlayer.setProp('y', collideRes.y - myPlayer.height)
+      //   const slopeBotttom = {
+      //     a: { x: sl.x, y: sl.y + sl.height },
+      //     b: { x: sl.x + sl.width, y: sl.y + sl.height }
+      //   }
+      //   const slopeSide = {
+      //     a: { x: sl.x + sl.width, y: sl.y },
+      //     b: { x: sl.x + sl.width, y: sl.y + sl.height }
+      //   }
+      //   const slopeXRatio = getDistance(slopeBotttom.a, slopeBotttom.b) / getDistance(sl.slopeLine[0], sl.slopeLine[1])
+      //   const slopeYRatio = getDistance(slopeSide.a, slopeSide.b) / getDistance(sl.slopeLine[0], sl.slopeLine[1])
+      //   //
+      //   myPlayer.setProp('movement', {
+      //     ...myPlayer.movement,
+      //     // vy: 0,
+      //     slopeX: slopeXRatio, 
+      //     slopeY: slopeYRatio,
+      //   })
+      //   // myPlayer.isInAir = false
+      //   myPlayer.useGravity = false
+      // }
     })
     //
     //jump through platform type

@@ -143,3 +143,34 @@ export const checkLineIntersection = (line1, line2) => {
 export const getDistance = (a, b) => (
   Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y))
 )
+
+export const getVectors = (points) => {
+  const vectors = []
+  for (let i = 0; i < points.length - 1; i++) {
+    vectors[i] = {
+      x: points[i + 1].x - points[i].x,
+      y: points[i + 1].y - points[i].y,
+    }
+  }
+  return vectors
+}
+export const getUnitVector = (vector) => {
+  const length = Math.sqrt(vector.x * vector.x + vector.y + vector.y)
+  return ({
+    x: vector.x / length,
+    y: vector.y / length,
+  })
+}
+
+export const objMoveBaseOnLines = (obj, points) => {
+  const { x, y } = obj
+  const { vBasic } = obj.movement
+  const vectors = getVectors(points)
+  for (let i = 0; i < vectors.length; i++) {
+    const unitVector = getUnitVector(vectors[i])
+    //check obj is at which lines
+    //check obj after move is at the same line?
+  }
+  //
+
+}
