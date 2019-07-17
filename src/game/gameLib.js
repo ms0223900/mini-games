@@ -438,11 +438,11 @@ export class Ball extends BasicObj {
       h: this.height,
     }
   }
-  drawOnCanvas(ctx) {
+  drawOnCanvas(ctx, x, y) {
     ctx.save()
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
-    ctx.arc(0 + this.r, 0 + this.r, this.r, 0, Math.PI * 2)
+    ctx.arc(x + this.r, y + this.r, this.r, 0, Math.PI * 2)
     ctx.stroke()
     ctx.fill()
     ctx.restore()

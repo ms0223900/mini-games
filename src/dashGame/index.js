@@ -6,13 +6,16 @@ import {
   PFs,
   WBs,
   Slopes,
+  SL01,
   myPlayer,
+  B01,
 } from './components'
 import { 
   checkPlayerCollideWithPlatform,
   checkSolidBlockCollide, 
   checkLineIntersection,
   getDistance,
+  objMoveBaseOnLines,
 } from './gameFn'
 import { simpleCheckObjCollide } from '../game/gameFunc'
 
@@ -191,8 +194,21 @@ class DashingGame extends Game {
         }
       }
     })
-    //
-
+    //ball test
+    const axisReviseBall = {
+      ...B01,
+      x: B01.x - SL01.x,
+      y: B01.y - SL01.y,
+    }
+    const ballNewPos = objMoveBaseOnLines(B01, SL01.points)
+    if(ballNewPos) {
+      B01.setProp('x', ballNewPos.x)
+      B01.setProp('y', ballNewPos.y)
+    } else {
+      B01.setProp('x', B01.initPos.x)
+      B01.setProp('y', B01.initPos.y)
+    }
+    B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //
     !this.isPause && requestAnimationFrame( this.render.bind(this) )
   }

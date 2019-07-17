@@ -150,6 +150,8 @@ export const getVectors = (points) => {
     vectors[i] = {
       x: points[i + 1].x - points[i].x,
       y: points[i + 1].y - points[i].y,
+      A: { x: points[i].x, y: points[i].y },
+      B: { x: points[i + 1].x, y: points[i + 1].y },
     }
   }
   return vectors
@@ -161,16 +163,55 @@ export const getUnitVector = (vector) => {
     y: vector.y / length,
   })
 }
+//fn test ok
+export const checkPointAtLine = (point, lineA, lineB) => {
+  const checkCrossZero = (point.x - lineA.x) * (lineB.y - lineA.y) === (lineB.x - lineA.x) * (point.y - lineA.y)
+  const checkInBoundX = 
+    Math.min(lineA.x, lineB.x) <= point.x && Math.max(lineA.x, lineB.x) >= point.x
+  const checkInBoundY = 
+    Math.min(lineA.y, lineB.y) <= point.y && Math.max(lineA.y, lineB.y) >= point.y
+  if(checkCrossZero && checkInBoundX && checkInBoundY) {
+    return true
+  } return false
+}
 
 export const objMoveBaseOnLines = (obj, points) => {
   const { x, y } = obj
   const { vBasic } = obj.movement
+  
   const vectors = getVectors(points)
+  console.log(vectors)
+  //check obj is at which lines
+  let onWhichLine
   for (let i = 0; i < vectors.length; i++) {
-    const unitVector = getUnitVector(vectors[i])
-    //check obj is at which lines
-    //check obj after move is at the same line?
+    const v = vectors[i]
+    if(checkPointAtLine(obj, v.A, v.B)) {
+      onWhichLine = i
+      break
+    }
   }
-  //
-
+  // console.log(onWhichLine)
+  if( typeof(onWhichLine) === 'number' ) {
+    console.log(vectors[onWhichLine])
+    const unitVector = getUnitVector( vectors[onWhichLine] )
+    const newPos = {
+      x: x + vBasic * unitVector.x,
+      y: y + vBasic * unitVector.y,
+    }
+    if( checkPointAtLine(newPos, vectors[onWhichLine].A, vectors[onWhichLine].B) ) {
+      return newPos
+    } else {
+      //需增加剛好到線段交點的狀況
+      if(onWhichLine + 1 >= vectors.length) { return false }
+      const remainV = vBasic - getDistance(obj, vectors[onWhichLine].B)
+      const unitNextVector = getUnitVector( vectors[onWhichLine + 1] )
+      const newPos = {
+        x: vectors[onWhichLine + 1].A.x + remainV * unitNextVector.x,
+        y: vectors[onWhichLine + 1].A.y + remainV * unitNextVector.y,
+      }
+      return newPos
+    }
+  } else {
+    return false
+  }
 }

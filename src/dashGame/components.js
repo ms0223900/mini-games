@@ -2,7 +2,8 @@ import {
   BasicObj, 
   Triangle,
   PolyLine,
-  ControllableObj 
+  ControllableObj ,
+  Ball,
 } from '../game/gameLib'
 import { canvasSpec } from '../config'
 
@@ -136,6 +137,18 @@ export const moveObj = (width=80, height=80, x, y, cloneId) => {
   return obj
 }
 
+export const ball = (x=120, y=300, r=10) => {
+  const obj = new Ball({
+    id: 'ball', x, y, r,
+    fillStyle: '#0aa',
+  })
+  obj.setProp('movement', {
+    ...obj.movement,
+    vBasic: 3,
+  })
+  obj.initPos = { x, y }
+  return obj
+}
 
 export const PF01 = PlatForm(80, 10, 100, 150)
 export const PF02 = PlatForm(80, 10, 150, 200)
@@ -161,6 +174,7 @@ export const WBs = [WB01, WB02, WB03, WB04, WB05]
 
 export const S01 = Slope(100, 100, 1200, 420)
 export const SL01 = SlopeLines(200, 200)
+export const B01 = ball(120, 300)
 export const Slopes = [S01, SL01]
 console.log(S01)
 
