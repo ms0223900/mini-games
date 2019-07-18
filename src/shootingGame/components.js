@@ -9,7 +9,7 @@ import {
   ControllableObj,
   GroupObjs,
   BasicObj,
-} from '../game/gameLib'
+} from './shootingGameLib'
 import { getProbability, getAngleVelocity } from '../game/gameFunc'
 import {  
   bossHealth

@@ -51,3 +51,78 @@ img {
   text-align: center;
   border-radius: 10px;
 }
+
+// <div id={ 'controlPanel' }>
+//         <div id={ 'dPad' }>
+//           <button id={ 'dPadUp' }>UP</button>
+//           <button id={ 'dPadRight' }>RIGHT</button>
+//           <button id={ 'dPadDown' }>DOWN</button>
+//           <button id={ 'dPadLeft' }>LEFT</button>
+//         </div>
+//         <div id={ 'buttons' }>
+//           <button id={ 'attackBTN' }>ATK</button>
+//         </div>
+//       </div>
+
+#controlPanel {
+  // outline: 1px solid #a0a;
+  position: absolute;
+  top: 900px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  justify-content: space-around;
+  button {
+    position: absolute;
+    margin: auto;
+    width: 80px;
+    height: 80px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 6px 10px #aaa;
+  }
+  #dPad {
+    position: relative;
+    outline: 1px solid #a0a;
+    width: 60%;
+    #dPadUp {
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+    #dPadRight {
+      top: 0;
+      bottom: 0;
+      right: 0;
+    }
+    #dPadLeft {
+      top: 0;
+      bottom: 0;
+      left: 0;
+    }
+    #dPadDown {
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
+  #buttons {
+    position: relative;
+    width: 200px;
+    #attackBTN {
+      width: 100px;
+      height: 100px;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      left: 0;
+    }
+  }
+}
+
+
+

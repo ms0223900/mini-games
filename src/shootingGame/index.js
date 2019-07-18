@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import {  
   Game
-} from '../game/gameLib'
+} from './shootingGameLib'
 import {  
   getNewBullet,
   getNewEnemyBullet,
@@ -212,6 +212,9 @@ export class ShootingGame extends Game {
         obj.timerAttack = obj.timerAttackInit()
       }
     }
+  }
+  newGameKeyUpEvent(e) {
+    myPlayer.removeKeyCode(e)
   }
   newGameEvent(e) {
     const { keyCode } = e

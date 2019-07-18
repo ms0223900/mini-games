@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
-// import { MyGame } from './shootingGame'
-import DashGame from './dashGame'
+import { MyGame } from './shootingGame'
+// import { myPlayer } from './shootingGame/components'
+// import DashGame from './dashGame'
 import { canvasSpec } from './config'
 import { shootBullet } from './shootingGame/player'
 import './styles/style.scss'
@@ -16,8 +17,8 @@ export default () => {
   })
   useEffect(() => {
     
-    // myGame.current = MyGame(thisCanvas.current, canvasSpec)
-    myGame.current = DashGame(thisCanvas.current, canvasSpec)
+    myGame.current = MyGame(thisCanvas.current, canvasSpec)
+    // myGame.current = DashGame(thisCanvas.current, canvasSpec)
     myGame.current.render()
     console.log(myGame.current)
   }, [])
@@ -47,6 +48,30 @@ export default () => {
         width={ canvasSpec.width } 
         height={ canvasSpec.height } 
         ref={ setCanvas } />
+      <div id={ 'controlPanel' }>
+        <div id={ 'dPad' }>
+          <button onMouseDown={ 
+          () => { myGame.current.newGameEvent({ keyCode: 38 }) } }
+          onMouseUp={ 
+            () => { myGame.current.newGameKeyUpEvent({ keyCode: 38 }) } } id={ 'dPadUp' }>UP</button>
+          <button onMouseDown={ 
+          () => { myGame.current.newGameEvent({ keyCode: 39 }) } }
+          onMouseUp={ 
+            () => { myGame.current.newGameKeyUpEvent({ keyCode: 39 }) } } id={ 'dPadRight' }>RIGHT</button>
+          <button onMouseDown={ 
+          () => { myGame.current.newGameEvent({ keyCode: 40 }) } }
+          onMouseUp={ 
+            () => { myGame.current.newGameKeyUpEvent({ keyCode: 40 }) } } id={ 'dPadDown' }>DOWN</button>
+          <button onMouseDown={ 
+          () => { myGame.current.newGameEvent({ keyCode: 37 }) } }
+          onMouseUp={ 
+            () => { myGame.current.newGameKeyUpEvent({ keyCode: 37 }) } } id={ 'dPadLeft' }>LEFT</button>
+        </div>
+        <div id={ 'buttons' }>
+          <button 
+            onClick={ () => { shootBullet(myGame.current) } } id={ 'attackBTN' }>ATK</button>
+        </div>
+      </div>
     </div>
   )
 }
