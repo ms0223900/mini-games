@@ -10,7 +10,8 @@ export const checkPlayerCollideWithPlatform = (player, obj) => {
     objA: { x: x2, y: y2 }, //point of obj at A
     objB: { x: x2 + w2, y: y2 },
   }
-  //
+  //check moving platform condition
+  if(obj.movement.isMove && obj.movement.vy > 0) return false
   //include complete intersection condition
   if(points.playerB_next.x >= points.objA.x && points.playerA_next.x <= points.objB.x) {
     if(points.playerA.y <= points.objA.y && points.playerA_next.y >= points.objA.y) {
@@ -165,12 +166,14 @@ export const getUnitVector = (vector) => {
 }
 //fn test ok
 export const checkPointAtLine = (point, lineA, lineB) => {
-  const checkCrossZero = (point.x - lineA.x) * (lineB.y - lineA.y) === (lineB.x - lineA.x) * (point.y - lineA.y)
+  // const checkCrossZero = (point.x - lineA.x) * (lineB.y - lineA.y) === (lineB.x - lineA.x) * (point.y - lineA.y)
   const checkInBoundX = 
     Math.min(lineA.x, lineB.x) <= point.x && Math.max(lineA.x, lineB.x) >= point.x
   const checkInBoundY = 
     Math.min(lineA.y, lineB.y) <= point.y && Math.max(lineA.y, lineB.y) >= point.y
-  if(checkCrossZero && checkInBoundX && checkInBoundY) {
+  if(
+    // checkCrossZero && 
+    checkInBoundX && checkInBoundY) {
     return true
   } return false
 }
@@ -180,7 +183,7 @@ export const objMoveBaseOnLines = (obj, points) => {
   const { vBasic } = obj.movement
   
   const vectors = getVectors(points)
-  console.log(vectors)
+  // console.log(vectors)
   //check obj is at which lines
   let onWhichLine
   for (let i = 0; i < vectors.length; i++) {
@@ -192,7 +195,7 @@ export const objMoveBaseOnLines = (obj, points) => {
   }
   // console.log(onWhichLine)
   if( typeof(onWhichLine) === 'number' ) {
-    console.log(vectors[onWhichLine])
+    // console.log(vectors[onWhichLine])
     const unitVector = getUnitVector( vectors[onWhichLine] )
     const newPos = {
       x: x + vBasic * unitVector.x,

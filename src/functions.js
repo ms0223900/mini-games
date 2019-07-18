@@ -184,3 +184,11 @@ export const handleBlockLineBreak = (id=0, breakLimit=3, yDis=20, containerWidth
   const y = ~~( id / breakLimit ) * yDis
   return { x, y }
 }
+
+export const getReverseArr = (arr) => {
+  const res = []
+  for (let i = 0; i < arr.length; i++) {
+    res[i] = arr[arr.length - 1 - i]
+  }
+  return res
+}

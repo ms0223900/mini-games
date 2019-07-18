@@ -154,6 +154,7 @@ export class BasicObj {
       if(this.useGravity) {
         this.movement.vy += ay
       }
+      console.log(this.movement.vy)
       //
       const newX = this.x + baseVx + vx
       const newY = this.y + baseVy + vy
@@ -239,6 +240,11 @@ export class PolyLine extends BasicObj {
   constructor({ points=initPoints, ...props}) {
     super(props)
     this.points = points
+    this.pointsForLines = points.map(point => ({
+      x: point.x + props.x,
+      y: point.y + props.y,
+    }))
+    console.log(this.points)
   }
   drawOnCanvas(ctx, x, y) {
     ctx.save()
@@ -598,7 +604,7 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.movement.vy = 0
       const { slopeX, slopeY } = this.movement
       this.movement.vx = this.movement.vStandard * slopeX * -1
-      this.movement.vy = this.movement.vStandard * slopeY * 1
+      // this.movement.vy = this.movement.vStandard * slopeY * 1
       console.log(this.movement.vx, this.movement.vy)
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
@@ -607,7 +613,7 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.movement.vy = 0
       const { slopeX, slopeY } = this.movement
       this.movement.vx = this.movement.vStandard * slopeX * 1
-      this.movement.vy = this.movement.vStandard * slopeY * -1
+      // this.movement.vy = this.movement.vStandard * slopeY * -1
       console.log(this.movement.vx, this.movement.vy)
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {

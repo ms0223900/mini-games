@@ -144,7 +144,7 @@ export const ball = (x=120, y=300, r=10) => {
   })
   obj.setProp('movement', {
     ...obj.movement,
-    vBasic: 3,
+    vBasic: 2,
   })
   obj.initPos = { x, y }
   return obj
@@ -173,8 +173,8 @@ export const WB05 = WallBlock(800, 200, 1100, 500)
 export const WBs = [WB01, WB02, WB03, WB04, WB05]
 
 export const S01 = Slope(100, 100, 1200, 420)
-export const SL01 = SlopeLines(200, 200)
-export const B01 = ball(120, 300)
+export const SL01 = SlopeLines(100, 100)
+export const B01 = ball(100 + 120, 100 + 300)
 export const Slopes = [S01, SL01]
 console.log(S01)
 

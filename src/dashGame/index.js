@@ -17,6 +17,7 @@ import {
   getDistance,
   objMoveBaseOnLines,
 } from './gameFn'
+import { getReverseArr } from '../functions'
 import { simpleCheckObjCollide } from '../game/gameFunc'
 
 let UITextBox
@@ -195,18 +196,15 @@ class DashingGame extends Game {
       }
     })
     //ball test
-    const axisReviseBall = {
-      ...B01,
-      x: B01.x - SL01.x,
-      y: B01.y - SL01.y,
-    }
-    const ballNewPos = objMoveBaseOnLines(B01, SL01.points)
+    const ballNewPos = objMoveBaseOnLines(B01, SL01.pointsForLines)
     if(ballNewPos) {
       B01.setProp('x', ballNewPos.x)
       B01.setProp('y', ballNewPos.y)
     } else {
-      B01.setProp('x', B01.initPos.x)
-      B01.setProp('y', B01.initPos.y)
+      const lastPoint = SL01.pointsForLines[SL01.pointsForLines.length - 1]
+      // B01.setProp('x', lastPoint.x)
+      // B01.setProp('y', lastPoint.y)
+      SL01.setProp('pointsForLines', getReverseArr(SL01.pointsForLines))
     }
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //
