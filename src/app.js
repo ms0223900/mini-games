@@ -6,6 +6,35 @@ import { canvasSpec } from './config'
 import { shootBullet } from './shootingGame/player'
 import './styles/style.scss'
 
+function setKeysMove(game) {
+  window.addEventListener('load', () => {
+    const addGameEvent = (game, keyCode) => {
+      return () => { game.newGameEvent({ keyCode, }) }
+    }
+    const addGameKeyUpEvent = (game, keyCode) => {
+      return () => { game.newGameKeyUpEvent({ keyCode, }) }
+    }
+    const upBTN = document.getElementById('dPadUp')
+    const downBTN = document.getElementById('dPadDown')
+    const leftBTN = document.getElementById('dPadLeft')
+    const rightBTN = document.getElementById('dPadRight')
+    //
+    const buttons = [
+      { BTN: upBTN, keyCode: 38 },
+      { BTN: downBTN, keyCode: 40 },
+      { BTN: leftBTN, keyCode: 37 },
+      { BTN: rightBTN, keyCode: 39 },
+    ]
+    buttons.forEach(btn => {
+      btn.BTN.addEventListener('mousedown', addGameEvent(game, btn.keyCode))
+      btn.BTN.addEventListener('touchstart', addGameEvent(game, btn.keyCode))
+      btn.BTN.addEventListener('mouseup', addGameKeyUpEvent(game, btn.keyCode))
+      btn.BTN.addEventListener('touchend', addGameKeyUpEvent(game, btn.keyCode))
+    })
+  })
+}
+
+
 export default () => {
   const thisCanvas = useRef()
   const myGame = useRef()
@@ -21,10 +50,13 @@ export default () => {
     // myGame.current = DashGame(thisCanvas.current, canvasSpec)
     myGame.current.render()
     console.log(myGame.current)
+    setKeysMove(myGame.current)
   }, [])
   //
   return (
-    <div style={{ width: canvasSpec.width, height: canvasSpec.height, position: 'relative', }}>
+    <div 
+      // style={{ width: canvasSpec.width, height: canvasSpec.height, position: 'relative', }} 
+      className={ 'root' }>
       <div id='UI' style={{ display: uiDisplay, }}>
         <button onClick={ () => setDisplay('none') }>Close</button>
         <h3 id={ 'coinNow' }></h3>
@@ -50,22 +82,10 @@ export default () => {
         ref={ setCanvas } />
       <div id={ 'controlPanel' }>
         <div id={ 'dPad' }>
-          <button onMouseDown={ 
-          () => { myGame.current.newGameEvent({ keyCode: 38 }) } }
-          onMouseUp={ 
-            () => { myGame.current.newGameKeyUpEvent({ keyCode: 38 }) } } id={ 'dPadUp' }>UP</button>
-          <button onMouseDown={ 
-          () => { myGame.current.newGameEvent({ keyCode: 39 }) } }
-          onMouseUp={ 
-            () => { myGame.current.newGameKeyUpEvent({ keyCode: 39 }) } } id={ 'dPadRight' }>RIGHT</button>
-          <button onMouseDown={ 
-          () => { myGame.current.newGameEvent({ keyCode: 40 }) } }
-          onMouseUp={ 
-            () => { myGame.current.newGameKeyUpEvent({ keyCode: 40 }) } } id={ 'dPadDown' }>DOWN</button>
-          <button onMouseDown={ 
-          () => { myGame.current.newGameEvent({ keyCode: 37 }) } }
-          onMouseUp={ 
-            () => { myGame.current.newGameKeyUpEvent({ keyCode: 37 }) } } id={ 'dPadLeft' }>LEFT</button>
+          <button id={ 'dPadUp' }>UP</button>
+          <button id={ 'dPadRight' }>RIGHT</button>
+          <button id={ 'dPadDown' }>DOWN</button>
+          <button id={ 'dPadLeft' }>LEFT</button>
         </div>
         <div id={ 'buttons' }>
           <button 

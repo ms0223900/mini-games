@@ -204,7 +204,7 @@ export const objMoveBaseOnLines = (obj, points) => {
     if( checkPointAtLine(newPos, vectors[onWhichLine].A, vectors[onWhichLine].B) ) {
       return newPos
     } else {
-      //需增加剛好到線段交點的狀況
+      //需增加剛好到線段交點的狀況?
       if(onWhichLine + 1 >= vectors.length) { return false }
       const remainV = vBasic - getDistance(obj, vectors[onWhichLine].B)
       const unitNextVector = getUnitVector( vectors[onWhichLine + 1] )
