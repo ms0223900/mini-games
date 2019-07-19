@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react'
-import { MyGame } from './shootingGame'
+// import { MyGame } from './shootingGame'
 // import { myPlayer } from './shootingGame/components'
-// import DashGame from './dashGame'
+import DashGame from './dashGame'
 import { canvasSpec } from './config'
 import { shootBullet } from './shootingGame/player'
 import './styles/style.scss'
@@ -46,8 +46,8 @@ export default () => {
   })
   useEffect(() => {
     
-    myGame.current = MyGame(thisCanvas.current, canvasSpec)
-    // myGame.current = DashGame(thisCanvas.current, canvasSpec)
+    // myGame.current = MyGame(thisCanvas.current, canvasSpec)
+    myGame.current = DashGame(thisCanvas.current, canvasSpec)
     myGame.current.render()
     console.log(myGame.current)
     setKeysMove(myGame.current)
@@ -73,7 +73,8 @@ export default () => {
         <button id={ 'restartBTN' }>{ 'Restart!' }</button>
       </div>
       <h3><span>{ 'ui: ' }</span><span id={ 'uiText' }></span></h3>
-      <div id={ 'canvasContainer' }>
+      <div 
+        id={ 'canvasContainer' }>
         <canvas 
           onClick={ 
             () => { shootBullet(myGame.current) } }
@@ -82,7 +83,9 @@ export default () => {
           height={ canvasSpec.height } 
           ref={ setCanvas } />
       </div>
-      <div id={ 'controlPanel' }>
+      <div id={ 'controlPanel' }
+        style={{ display: 'none' }}
+      >
         <div id={ 'dPad' }>
           <button id={ 'dPadUp' }>UP</button>
           <button id={ 'dPadRight' }>RIGHT</button>

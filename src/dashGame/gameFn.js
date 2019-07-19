@@ -148,11 +148,14 @@ export const getDistance = (a, b) => (
 export const getVectors = (points) => {
   const vectors = []
   for (let i = 0; i < points.length - 1; i++) {
+    const x = points[i + 1].x - points[i].x
+    const y = points[i + 1].y - points[i].y
     vectors[i] = {
-      x: points[i + 1].x - points[i].x,
-      y: points[i + 1].y - points[i].y,
+      x,
+      y,
       A: { x: points[i].x, y: points[i].y },
       B: { x: points[i + 1].x, y: points[i + 1].y },
+      unitV: getUnitVector({ x, y})
     }
   }
   return vectors
@@ -165,15 +168,16 @@ export const getUnitVector = (vector) => {
   })
 }
 //fn test ok
-export const checkPointAtLine = (point, lineA, lineB) => {
-  // const checkCrossZero = (point.x - lineA.x) * (lineB.y - lineA.y) === (lineB.x - lineA.x) * (point.y - lineA.y)
+export const checkPointAtLine = (point, lineA, lineB, useStrict=false) => {
+  const checkCrossZero = (point.x - lineA.x) * (lineB.y - lineA.y) === (lineB.x - lineA.x) * (point.y - lineA.y)
   const checkInBoundX = 
     Math.min(lineA.x, lineB.x) <= point.x && Math.max(lineA.x, lineB.x) >= point.x
   const checkInBoundY = 
     Math.min(lineA.y, lineB.y) <= point.y && Math.max(lineA.y, lineB.y) >= point.y
-  if(
-    // checkCrossZero && 
-    checkInBoundX && checkInBoundY) {
+  if(checkInBoundX && checkInBoundY) {
+    if(useStrict) {
+      return checkCrossZero
+    }
     return true
   } return false
 }

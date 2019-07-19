@@ -67,6 +67,8 @@ export class BasicObj {
       ax: 0,
       ay: 0,
     }
+    this.useGravity = true
+    this.onSlope = false
     this.newBehavior = []
     this.collideObjs = collideObjs
     //
@@ -151,10 +153,10 @@ export class BasicObj {
     this.newBehavior.forEach(b => b(this))
     if(this.movement.isMove) {
       this.wallBounce()
-      if(this.useGravity) {
+      if(this.useGravity && !this.onSlope) {
         this.movement.vy += ay
       }
-      console.log(this.movement.vy)
+      // console.log(this.movement.vy)
       //
       const newX = this.x + baseVx + vx
       const newY = this.y + baseVy + vy
@@ -537,6 +539,8 @@ export class ControllableObj extends BasicStaticImgObj {
       vy: 0,
       ay: 0.2, //gravity
       moveSet: [],
+      slopeX: 0,
+      slopeY: 0,
     }
     this.isInAir = false
     this.useGravity = true
@@ -604,17 +608,21 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.movement.vy = 0
       const { slopeX, slopeY } = this.movement
       this.movement.vx = this.movement.vStandard * slopeX * -1
-      // this.movement.vy = this.movement.vStandard * slopeY * 1
-      console.log(this.movement.vx, this.movement.vy)
+      if(slopeY) {
+        this.movement.vy = this.movement.vStandard * slopeY * 1
+      }
+      console.log(slopeY)
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
       // console.log('right')
       console.log(this.attachWall)
       // this.movement.vy = 0
       const { slopeX, slopeY } = this.movement
+      if(slopeY) {
+        this.movement.vy = this.movement.vStandard * slopeY * -1
+      }
       this.movement.vx = this.movement.vStandard * slopeX * 1
-      // this.movement.vy = this.movement.vStandard * slopeY * -1
-      console.log(this.movement.vx, this.movement.vy)
+      // console.log(this.movement.vx, this.movement.vy)
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
       // console.log('up')

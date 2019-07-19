@@ -7,6 +7,7 @@ import {
   WBs,
   Slopes,
   SL01,
+  SL02,
   myPlayer,
   B01,
 } from './components'
@@ -16,8 +17,11 @@ import {
   checkLineIntersection,
   getDistance,
   objMoveBaseOnLines,
+  getVectors,
+  checkPointAtLine,
 } from './gameFn'
 import { getReverseArr } from '../functions'
+import { Camera } from './Camera'
 import { simpleCheckObjCollide } from '../game/gameFunc'
 
 let UITextBox
@@ -25,47 +29,7 @@ window.onload = () => {
   UITextBox = document.getElementById('uiText')
 }
 
-export function Camera(maxWidth, maxHeight) {
-  return ({
-    w: maxWidth,
-    h: maxHeight,
-    originCenterX: maxWidth / 2,
-    originCenterY: maxHeight / 2,
-    x: maxWidth / 2,
-    y: maxHeight / 2,
-    vx: 0,
-    vy: 0,
-    offsetX: 0,
-    offsetY: 0,
-    updatePos(x, y) {
-      if(x >= this.w / 2) {
-        this.x = x
-        this.offsetX = this.x - this.originCenterX 
-      } else {
-        this.offsetX = 0
-      }
-      if(y <= this.h / 2) {
-        this.y = y
-        this.offsetY = this.y - this.originCenterY
-      } else {
-        this.offsetY = 0
-      }
-    },
-    move() {
-      this.x += this.vx
-      this.offsetX = this.x - this.originCenterX
-      this.y += this.vy
-      this.offsetY = this.y - this.originCenterY
-    },
-    detectIsOutofBound(obj) {
-      if(obj.x < this.x - this.w / 2 || obj.x > this.x + this.w / 2 ||
-        obj.y < this.y - this.h / 2 || obj.y > this.y + this.h / 2) {
-          return true
-        } 
-      return false
-    }
-  })
-}
+
 const camera = Camera(960, 540)
 //
 
@@ -136,7 +100,7 @@ class DashingGame extends Game {
     })
     myPlayer.movement.slopeX = 1
     myPlayer.movement.slopeY = 0
-    myPlayer.useGravity = true
+    // myPlayer.useGravity = true
     //
     Slopes.forEach(sl => {
       sl.render(this.ctx, -camera.offsetX, -camera.offsetY)
@@ -206,6 +170,48 @@ class DashingGame extends Game {
       // B01.setProp('y', lastPoint.y)
       SL01.setProp('pointsForLines', getReverseArr(SL01.pointsForLines))
     }
+    //test player collide with slope
+    const playerSlopePoint = { //point A
+      x: myPlayer.x + myPlayer.slopePoint.x,
+      y: myPlayer.y + myPlayer.slopePoint.y,
+    }
+    const playerSlopePoint_next = { //point B
+      x: myPlayer.x + myPlayer.slopePoint.x + myPlayer.movement.vx,
+      y: myPlayer.y + myPlayer.slopePoint.y + myPlayer.movement.vy,
+    }
+    const playerSlopePoints = [playerSlopePoint, playerSlopePoint_next]
+    const slopeLines = getVectors(SL02.pointsForLines)
+    for (let i = 0; i < slopeLines.length; i++) {
+      const slopeLine = slopeLines[i];
+      const res = checkLineIntersection(playerSlopePoints, [slopeLine.A, slopeLine.B])
+      const pointLineRes = checkPointAtLine(myPlayer, slopeLine.A, slopeLine.B)
+      // if(pointLineRes && myPlayer.onSlope) {
+      //   myPlayer.setProp('movement', {
+      //     ...myPlayer.movement,
+      //     // ay: 0,
+      //     slopeX: slopeLine.unitV.x,
+      //     slopeY: -slopeLine.unitV.y
+      //   })
+      // }
+      if(res || pointLineRes) {
+        // window.alert('collide')
+        myPlayer.setProp('x', res.x - myPlayer.slopePoint.x)
+        myPlayer.setProp('y', res.y - myPlayer.slopePoint.y)
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          vy: 0,
+          vx: 0,
+          // ay: 0,
+          slopeX: slopeLine.unitV.x,
+          slopeY: -slopeLine.unitV.y
+        })
+        myPlayer.setProp('isInAir', false)
+        // myPlayer.setProp('onSlope', true)
+        // myPlayer.setProp('useGravity', false)
+        break
+      }
+    }
+
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //
     !this.isPause && requestAnimationFrame( this.render.bind(this) )

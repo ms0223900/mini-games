@@ -98,9 +98,9 @@ export const SlopeLines = (x, y, cloneId) => {
   return obj
 }
 
-export const Player = (x, y) => {
+export const Player = (x, y, width=60, height=100) => {
   const obj = new ControllableObj({
-    x, y, width: 60, height: 100,
+    x, y, width, height,
     fillStyle: '#0af',
   })
   obj.setProp('movement', {
@@ -115,6 +115,10 @@ export const Player = (x, y) => {
     useWall: true,
     useBounce: false,
   })
+  obj.slopePoint = {
+    x: width * 0.8,
+    y: height ,
+  }
   return obj
 }
 
@@ -170,15 +174,16 @@ export const WB03 = WallBlock(100, 300, 670, 300)
 export const WB04 = WallBlock(100, 300, 800, 200)
 export const WB05 = WallBlock(800, 200, 1100, 500)
 // export const WB06 = WallBlock(800, 200, 1290, 410)
-export const WBs = [WB01, WB02, WB03, WB04, WB05]
+export const WBs = [WB01, WB02, WB03, WB04]
 
 export const S01 = Slope(100, 100, 1200, 420)
 export const SL01 = SlopeLines(100, 100)
+export const SL02 = SlopeLines(800, 200)
 export const B01 = ball(100 + 120, 100 + 300)
-export const Slopes = [S01, SL01]
+export const Slopes = [S01, SL01, SL02]
 console.log(S01)
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(100, 200)
+export const myPlayer = Player(900, 200)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)
