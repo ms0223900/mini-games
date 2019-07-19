@@ -153,13 +153,20 @@ export class BasicObj {
     this.newBehavior.forEach(b => b(this))
     if(this.movement.isMove) {
       this.wallBounce()
-      if(this.useGravity && !this.onSlope) {
-        this.movement.vy += ay
+      let newX, newY
+      if(this.onSlope) {
+        // newX = this.slopePosUpdate.x
+        // newY = this.slopePosUpdate.y
+        return
+      } else {
+        if(this.useGravity) {
+          this.movement.vy += ay
+        }
+        // console.log(this.movement.vy)
+        //
+        newX = this.x + baseVx + vx
+        newY = this.y + baseVy + vy
       }
-      // console.log(this.movement.vy)
-      //
-      const newX = this.x + baseVx + vx
-      const newY = this.y + baseVy + vy
       this.x = newX
       this.y = newY
       this.updateSpec(newX, newY)
@@ -606,23 +613,32 @@ export class ControllableObj extends BasicStaticImgObj {
       console.log(this.attachWall)
       // console.log('left')
       // this.movement.vy = 0
-      const { slopeX, slopeY } = this.movement
-      this.movement.vx = this.movement.vStandard * slopeX * -1
-      if(slopeY) {
-        this.movement.vy = this.movement.vStandard * slopeY * 1
+      // const { slopeX, slopeY } = this.movement
+      if(this.onSlope) {
+        // this.move()
+        this.setProp('x', this.slopePosUpdate.x - this.slopePoint.x)
+        this.setProp('y', this.slopePosUpdate.y - this.slopePoint.y)
+        // this.setProp('x', this.slopePosUpdate.x)
+        // this.setProp('y', this.slopePosUpdate.y)
+        return
       }
-      console.log(slopeY)
+      this.movement.vx = this.movement.vStandard * -1
+      
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
       // console.log('right')
       console.log(this.attachWall)
       // this.movement.vy = 0
       const { slopeX, slopeY } = this.movement
-      if(slopeY) {
-        this.movement.vy = this.movement.vStandard * slopeY * -1
+      if(this.onSlope) {
+        this.move()
+        return
       }
-      this.movement.vx = this.movement.vStandard * slopeX * 1
-      // console.log(this.movement.vx, this.movement.vy)
+      if(this.onSlope) {
+        this.move()
+        return
+      }
+      this.movement.vx = this.movement.vStandard * 1
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
       // console.log('up')
@@ -631,7 +647,8 @@ export class ControllableObj extends BasicStaticImgObj {
       if(checkMoveSet(39) || checkMoveSet(68) || checkMoveSet(37) || checkMoveSet(65)) {
         this.attachWall && this.setProp('isInAir', false)
       }
-      
+      //reset onSlope
+      this.setProp('onSlope', false)
       if(this.useGravity) {
         if(!this.isInAir) {
           // console.log('up')

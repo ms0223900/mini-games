@@ -99,8 +99,8 @@ class DashingGame extends Game {
       }
     })
     myPlayer.movement.slopeX = 1
-    myPlayer.movement.slopeY = 0
-    // myPlayer.useGravity = true
+    // myPlayer.movement.slopeY = 0
+    myPlayer.useGravity = true
     //
     Slopes.forEach(sl => {
       sl.render(this.ctx, -camera.offsetX, -camera.offsetY)
@@ -160,16 +160,17 @@ class DashingGame extends Game {
       }
     })
     //ball test
-    const ballNewPos = objMoveBaseOnLines(B01, SL01.pointsForLines)
-    if(ballNewPos) {
-      B01.setProp('x', ballNewPos.x)
-      B01.setProp('y', ballNewPos.y)
-    } else {
-      const lastPoint = SL01.pointsForLines[SL01.pointsForLines.length - 1]
-      // B01.setProp('x', lastPoint.x)
-      // B01.setProp('y', lastPoint.y)
-      SL01.setProp('pointsForLines', getReverseArr(SL01.pointsForLines))
-    }
+    // const ballNewPos = objMoveBaseOnLines(B01, SL01.pointsForLines)
+    // if(ballNewPos) {
+    //   B01.setProp('x', ballNewPos.x)
+    //   B01.setProp('y', ballNewPos.y)
+    // } else {
+    //   const lastPoint = SL01.pointsForLines[SL01.pointsForLines.length - 1]
+    //   // B01.setProp('x', lastPoint.x)
+    //   // B01.setProp('y', lastPoint.y)
+    //   SL01.setProp('pointsForLines', getReverseArr(SL01.pointsForLines))
+    // }
+    //
     //test player collide with slope
     const playerSlopePoint = { //point A
       x: myPlayer.x + myPlayer.slopePoint.x,
@@ -184,17 +185,20 @@ class DashingGame extends Game {
     for (let i = 0; i < slopeLines.length; i++) {
       const slopeLine = slopeLines[i];
       const res = checkLineIntersection(playerSlopePoints, [slopeLine.A, slopeLine.B])
-      const pointLineRes = checkPointAtLine(myPlayer, slopeLine.A, slopeLine.B)
-      // if(pointLineRes && myPlayer.onSlope) {
-      //   myPlayer.setProp('movement', {
-      //     ...myPlayer.movement,
-      //     // ay: 0,
-      //     slopeX: slopeLine.unitV.x,
-      //     slopeY: -slopeLine.unitV.y
-      //   })
-      // }
-      if(res || pointLineRes) {
+      const playerSlopePoint = {
+        x: myPlayer.x + myPlayer.slopePoint.x,
+        y: myPlayer.y + myPlayer.slopePoint.y,
+        movement: myPlayer.movement
+      }
+      const pointLineRes = checkPointAtLine(playerSlopePoint, slopeLine.A, slopeLine.B)
+      if(pointLineRes && myPlayer.onSlope) {
+        console.log('a')
+        const slopeMoveNewPos = objMoveBaseOnLines(playerSlopePoint, SL02.pointsForLines)
+        myPlayer.slopePosUpdate = slopeMoveNewPos
+      }
+      if(res) {
         // window.alert('collide')
+        console.log('b')
         myPlayer.setProp('x', res.x - myPlayer.slopePoint.x)
         myPlayer.setProp('y', res.y - myPlayer.slopePoint.y)
         myPlayer.setProp('movement', {
@@ -202,11 +206,18 @@ class DashingGame extends Game {
           vy: 0,
           vx: 0,
           // ay: 0,
-          slopeX: slopeLine.unitV.x,
-          slopeY: -slopeLine.unitV.y
         })
+        // console.log(slopeLine)
+        const playerSlopePoints = {
+          x: myPlayer.x + myPlayer.slopePoint.x,
+          y: myPlayer.y + myPlayer.slopePoint.y,
+          movement: myPlayer.movement
+        }
+        const slopeMoveNewPos = objMoveBaseOnLines(playerSlopePoints, SL02.pointsForLines)
+        myPlayer.slopePosUpdate = slopeMoveNewPos
+        console.log(slopeMoveNewPos)
         myPlayer.setProp('isInAir', false)
-        // myPlayer.setProp('onSlope', true)
+        myPlayer.setProp('onSlope', true)
         // myPlayer.setProp('useGravity', false)
         break
       }

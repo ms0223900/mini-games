@@ -178,7 +178,7 @@ export const WBs = [WB01, WB02, WB03, WB04]
 
 export const S01 = Slope(100, 100, 1200, 420)
 export const SL01 = SlopeLines(100, 100)
-export const SL02 = SlopeLines(800, 200)
+export const SL02 = SlopeLines(900, 200)
 export const B01 = ball(100 + 120, 100 + 300)
 export const Slopes = [S01, SL01, SL02]
 console.log(S01)

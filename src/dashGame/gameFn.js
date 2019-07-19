@@ -187,7 +187,7 @@ export const objMoveBaseOnLines = (obj, points) => {
   const { vBasic } = obj.movement
   
   const vectors = getVectors(points)
-  // console.log(vectors)
+  console.log(obj.x, obj.y, vectors)
   //check obj is at which lines
   let onWhichLine
   for (let i = 0; i < vectors.length; i++) {
@@ -197,7 +197,7 @@ export const objMoveBaseOnLines = (obj, points) => {
       break
     }
   }
-  // console.log(onWhichLine)
+  console.log(onWhichLine)
   if( typeof(onWhichLine) === 'number' ) {
     // console.log(vectors[onWhichLine])
     const unitVector = getUnitVector( vectors[onWhichLine] )
