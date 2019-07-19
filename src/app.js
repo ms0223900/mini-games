@@ -73,13 +73,15 @@ export default () => {
         <button id={ 'restartBTN' }>{ 'Restart!' }</button>
       </div>
       <h3><span>{ 'ui: ' }</span><span id={ 'uiText' }></span></h3>
-      <canvas 
-        onClick={ 
-          () => { shootBullet(myGame.current) } }
-        style={{ boxShadow: '0px 0px 10px #111'}}
-        width={ canvasSpec.width } 
-        height={ canvasSpec.height } 
-        ref={ setCanvas } />
+      <div id={ 'canvasContainer' }>
+        <canvas 
+          onClick={ 
+            () => { shootBullet(myGame.current) } }
+          style={{ boxShadow: '0px 0px 10px #111'}}
+          width={ canvasSpec.width } 
+          height={ canvasSpec.height } 
+          ref={ setCanvas } />
+      </div>
       <div id={ 'controlPanel' }>
         <div id={ 'dPad' }>
           <button id={ 'dPadUp' }>UP</button>
