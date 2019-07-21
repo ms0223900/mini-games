@@ -155,9 +155,16 @@ export class BasicObj {
       this.wallBounce()
       let newX, newY
       if(this.onSlope) {
-        // newX = this.slopePosUpdate.x
-        // newY = this.slopePosUpdate.y
-        return
+        if(vx > 0) { //right
+          console.log( this.slopePosUpdate_right)
+          newX = this.slopePosUpdate_right.x - this.slopePoint.x
+          newY = this.slopePosUpdate_right.y - this.slopePoint.y
+        } else if(vx < 0) {
+          newX = this.slopePosUpdate_left.x - this.slopePoint.x
+          newY = this.slopePosUpdate_left.y - this.slopePoint.y
+        } else {
+          return 
+        }
       } else {
         if(this.useGravity) {
           this.movement.vy += ay
@@ -614,30 +621,12 @@ export class ControllableObj extends BasicStaticImgObj {
       // console.log('left')
       // this.movement.vy = 0
       // const { slopeX, slopeY } = this.movement
-      if(this.onSlope) {
-        // this.move()
-        this.setProp('x', this.slopePosUpdate.x - this.slopePoint.x)
-        this.setProp('y', this.slopePosUpdate.y - this.slopePoint.y)
-        // this.setProp('x', this.slopePosUpdate.x)
-        // this.setProp('y', this.slopePosUpdate.y)
-        return
-      }
       this.movement.vx = this.movement.vStandard * -1
-      
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
       // console.log('right')
       console.log(this.attachWall)
       // this.movement.vy = 0
-      const { slopeX, slopeY } = this.movement
-      if(this.onSlope) {
-        this.move()
-        return
-      }
-      if(this.onSlope) {
-        this.move()
-        return
-      }
       this.movement.vx = this.movement.vStandard * 1
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
