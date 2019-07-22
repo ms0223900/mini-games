@@ -187,41 +187,51 @@ class DashingGame extends Game {
       const slopeLine = slopeLines[i];
       const res = checkLineIntersection(playerSlopePoints, [slopeLine.A, slopeLine.B])
       const pointLineRes = checkPointAtLine(playerSlopePoint, slopeLine.A, slopeLine.B)
+      //
+      const slopeMoveNewPos_right = objMoveBaseOnLines(playerSlopePoint, SL02.pointsForLines)
+      const slopeMoveNewPos_left = objMoveBaseOnLines(playerSlopePoint, getReverseArr(SL02.pointsForLines))
+      
       const setNewPos_rightOrLeft = () => {
-        const slopeMoveNewPos_right = objMoveBaseOnLines(playerSlopePoint, SL02.pointsForLines)
-        const slopeMoveNewPos_left = objMoveBaseOnLines(playerSlopePoint, getReverseArr(SL02.pointsForLines))
         myPlayer.slopePosUpdate_right = slopeMoveNewPos_right
         myPlayer.slopePosUpdate_left = slopeMoveNewPos_left
         if(!slopeMoveNewPos_right || !slopeMoveNewPos_left) {
-          console.log('falsesss')
+          // console.log('falsesss')
           myPlayer.setProp('onSlope', false)
         }
       }
-      //
-      if(pointLineRes && myPlayer.onSlope) {
-        // console.log('a')
+      //剛好在末端附近(是onSlope, 但是往左或往右沒有值)
+      if((!slopeMoveNewPos_right || !slopeMoveNewPos_left) && myPlayer.onSlope) {
+        console.log(myPlayer.x)
         setNewPos_rightOrLeft()
         break
       }
-      if(res) {
-        // window.alert('collide')
-        // console.log('b')
-        myPlayer.setProp('x', res.x - myPlayer.slopePoint.x)
-        myPlayer.setProp('y', res.y - myPlayer.slopePoint.y)
-        myPlayer.setProp('movement', {
-          ...myPlayer.movement,
-          vy: 0,
-          vx: 0,
-          // ay: 0,
-        })
+      if((pointLineRes && myPlayer.onSlope)) {
+        // console.log(i, 'a')
+        // console.log(myPlayer.x + myPlayer.slopePoint.x, myPlayer.y + myPlayer.slopePoint.y, SL02.pointsForLines)
         setNewPos_rightOrLeft()
-        //
-        console.log(myPlayer.slopePosUpdate_right)
-        myPlayer.setProp('isInAir', false)
-        myPlayer.setProp('onSlope', true)
+        break 
+      } else {
+        if(res) {
+          // window.alert('collide')
+          // console.log(i, 'b')
+          myPlayer.setProp('x', res.x - myPlayer.slopePoint.x)
+          myPlayer.setProp('y', res.y - myPlayer.slopePoint.y)
+          myPlayer.setProp('movement', {
+            ...myPlayer.movement,
+            vy: 0,
+            vx: 0,
+            // ay: 0,
+          })
+          setNewPos_rightOrLeft()
+          //
+          // console.log(myPlayer.slopePosUpdate_right)
+          myPlayer.setProp('isInAir', false)
+          myPlayer.setProp('onSlope', true)
+
+          // myPlayer.setProp('useGravity', false)
+          break
+        }
         
-        // myPlayer.setProp('useGravity', false)
-        break
       }
     }
     

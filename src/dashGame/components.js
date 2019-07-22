@@ -100,6 +100,7 @@ export const SlopeLines = (x, y, cloneId) => {
 
 export const Player = (x, y, width=60, height=100) => {
   const obj = new ControllableObj({
+    id: 'player',
     x, y, width, height,
     fillStyle: '#0af',
   })
@@ -172,9 +173,9 @@ export const WB01 = WallBlock(100, 100, 100, 300)
 export const WB02 = WallBlock(100, 100, 200, 400)
 export const WB03 = WallBlock(100, 300, 670, 300)
 export const WB04 = WallBlock(100, 300, 800, 200)
-export const WB05 = WallBlock(800, 200, 1100, 500)
-// export const WB06 = WallBlock(800, 200, 1290, 410)
-export const WBs = [WB01, WB02, WB03, WB04]
+export const WB05 = WallBlock(800, 200, 900, 510)
+export const WB06 = WallBlock(800, 200, 1120, 450)
+export const WBs = [WB01, WB02, WB03, WB04, WB05]
 
 export const S01 = Slope(100, 100, 1200, 420)
 export const SL01 = SlopeLines(100, 100)

@@ -155,21 +155,25 @@ export class BasicObj {
       this.wallBounce()
       let newX, newY
       if(this.onSlope) {
-        if(vx > 0) { //right
+        if(vx > 0 && this.slopePosUpdate_right) { //right
           console.log( this.slopePosUpdate_right)
           newX = this.slopePosUpdate_right.x - this.slopePoint.x
           newY = this.slopePosUpdate_right.y - this.slopePoint.y
-        } else if(vx < 0) {
+        } else if(vx < 0 && this.slopePosUpdate_left) {
           newX = this.slopePosUpdate_left.x - this.slopePoint.x
           newY = this.slopePosUpdate_left.y - this.slopePoint.y
         } else {
+          // console.log('onSLopee')
+          // this.updateSpec(this.x, this.y)
           return 
         }
       } else {
         if(this.useGravity) {
           this.movement.vy += ay
         }
-        // console.log(this.movement.vy)
+        if(this.id === 'player') {
+          console.log(this.movement.vy)
+        }
         //
         newX = this.x + baseVx + vx
         newY = this.y + baseVy + vy
@@ -247,10 +251,10 @@ export class Triangle extends BasicObj {
 }
 
 const initPoints = [
-  { x: 100, y: 300, },
+  { x: 70, y: 300, },
   { x: 150, y: 300, },
   { x: 200, y: 250, },
-  { x: 250, y: 250, },
+  { x: 400, y: 250, },
 ]
 export class PolyLine extends BasicObj {
   constructor({ points=initPoints, ...props}) {
