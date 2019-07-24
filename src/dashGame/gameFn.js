@@ -1,7 +1,22 @@
+import { simpleCheckObjCollide } from '../game/gameFunc'
+
 export const checkPlayerCollideWithPlatform = (player, obj) => {
   const { x, y, w, h } = player.spec
   const { vx, vy } = player.movement
   const { x: x2, y: y2, w: w2 } = obj.spec
+  const { vx: vx2, vy: vy2 } = obj.movement
+  const objV = {
+    vx: obj.movement.isMove ? vx2 : 0,
+    vy: obj.movement.isMove ? vy2 : 0,
+  }
+  const playerNext = {
+    spec: {
+      x: x + vx,
+      y: y + vy,
+      w,
+      h,
+    }
+  }
   const points = {
     playerA: { x, y: y + h },
     playerB: { x: x + w, y: y + h },
@@ -9,9 +24,22 @@ export const checkPlayerCollideWithPlatform = (player, obj) => {
     playerB_next: { x: x + vx + w, y: y + vy + h },
     objA: { x: x2, y: y2 }, //point of obj at A
     objB: { x: x2 + w2, y: y2 },
+    objA_next: { x: x2 + objV.vx, y: y2 + objV.vy }, //point of obj at A
+    objB_next: { x: x2 + objV.vx + w2, y: y2 + objV.vy },
   }
+
   //check moving platform condition
-  if(obj.movement.isMove && obj.movement.vy > 0) return false
+  if(obj.movement.isMove && player.movement.isMove) {
+    
+    if(!player.isInAir && player.whichPF === obj.cloneId && simpleCheckObjCollide(playerNext, obj)) {
+      return true
+    }
+    if((points.playerA.y <= points.objA.y && points.playerA_next.y >= points.objA_next.y) && simpleCheckObjCollide(playerNext, obj)) {
+      return true
+    } 
+    // !simpleCheckObjCollide(player, obj) && player.setProp('whichPF', null)
+    return false
+  }
   //include complete intersection condition
   if(points.playerB_next.x >= points.objA.x && points.playerA_next.x <= points.objB.x) {
     if(points.playerA.y <= points.objA.y && points.playerA_next.y >= points.objA.y) {

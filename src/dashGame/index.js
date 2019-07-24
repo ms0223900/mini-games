@@ -8,6 +8,7 @@ import {
   Slopes,
   SL01,
   SL02,
+  Ropes,
   myPlayer,
   B01,
 } from './components'
@@ -63,6 +64,7 @@ class DashingGame extends Game {
     // console.log(camera)
     //
     
+    //myPlayerInit
     myPlayer.attachWall = false
     //solid wall
     WBs.forEach(wb => {
@@ -100,7 +102,7 @@ class DashingGame extends Game {
     })
     myPlayer.movement.slopeX = 1
     // myPlayer.movement.slopeY = 0
-    myPlayer.useGravity = true
+    
     //
     Slopes.forEach(sl => {
       sl.render(this.ctx, -camera.offsetX, -camera.offsetY)
@@ -142,10 +144,18 @@ class DashingGame extends Game {
       baseVx: 0,
       baseVy: 0,
     }
-    platforms.forEach(pf => {
+    myPlayer.useGravity = true
+    // myPlayer.isInAir = true
+    platforms.forEach((pf) => {
       pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
       const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
       // console.log(collideRes)
+        
+      if(myPlayer.whichPF === pf.cloneId) { //should detect same platform
+        if(!collideRes) {
+          myPlayer.whichPF = null
+        }
+      }
       if(collideRes) {
         myPlayer.collideWithPlatform(pf.y)
         //moving platform
@@ -154,8 +164,10 @@ class DashingGame extends Game {
           myPlayer.movement = {
             ...myPlayer.movement,
             baseVx: pf.movement.vx,
-            baseVy: pf.movement.vy
+            baseVy: pf.movement.vy 
           }
+          myPlayer.useGravity = false
+          myPlayer.whichPF = pf.cloneId
         }
       }
     })
@@ -234,7 +246,28 @@ class DashingGame extends Game {
         
       }
     }
-    
+    //ropes
+    Ropes.forEach(rope => {
+      rope.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      const playerCenter = {
+        spec: {
+          x: myPlayer.x + myPlayer.width / 2,
+          y: myPlayer.y,
+          w: 0,
+          h: myPlayer.height,
+        }
+      }
+      if(simpleCheckObjCollide(playerCenter, rope)) {
+        myPlayer.attachRope = true
+        myPlayer.ropePosX = rope.x + rope.width / 2 - myPlayer.width / 2
+      } else {
+        myPlayer.attachRope = false
+        myPlayer.onRope = false
+      }
+    })
+    // console.log(myPlayer.attachRope)
+
+
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //
     !this.isPause && requestAnimationFrame( this.render.bind(this) )

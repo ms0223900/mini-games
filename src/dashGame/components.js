@@ -155,6 +155,15 @@ export const ball = (x=120, y=300, r=10) => {
   return obj
 }
 
+export const Rope = (x, y, height) => {
+  const obj = new BasicObj({
+    id: 'rope',
+    x, y, width: 20, height,
+    fillStyle: '#fa0',
+  })
+  return obj
+}
+
 export const PF01 = PlatForm(80, 10, 100, 150)
 export const PF02 = PlatForm(80, 10, 150, 200)
 export const PF03 = PlatForm(80, 10, 200, 300)
@@ -163,7 +172,7 @@ export const PF05 = PlatForm(80, 10, 300, 400)
 export const PF06 = PlatForm(80, 10, 500, 450)
 export const PF07 = PlatForm(800, 200, 1290, 410)
 export const MPF01 = MovingPlatForm(100, 20, 300, 300, 0, 460, 2)
-export const MPF02 = MovingPlatForm(100, 20, 600, 100, 0, 400, 0, 2)
+export const MPF02 = MovingPlatForm(100, 20, 600, 100, 1, 400, 0, 2)
 export const ground = PlatForm(10000, 10, 0, canvasSpec.height - 10)
 export const PFs = [PF01, PF02, PF03, PF04, PF05, PF06, PF07, ground, MPF01, MPF02]
 console.log(MPF02)
@@ -182,9 +191,12 @@ export const SL01 = SlopeLines(100, 100)
 export const SL02 = SlopeLines(900, 200)
 export const B01 = ball(100 + 120, 100 + 300)
 export const Slopes = [S01, SL01, SL02]
-console.log(S01)
+// console.log(S01)
+
+export const R01 = Rope(350, 400, 100)
+export const Ropes = [R01]
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(900, 200)
+export const myPlayer = Player(300, 200)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

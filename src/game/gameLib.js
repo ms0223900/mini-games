@@ -149,12 +149,17 @@ export class BasicObj {
     }
   }
   move() {
-    const { baseVx, baseVy, vx, vy, ay } = this.movement
+    const { baseVx, baseVy, vx, vy, ay, ropeVy } = this.movement
     this.newBehavior.forEach(b => b(this))
     if(this.movement.isMove) {
       this.wallBounce()
+      this.checkAllMoveSetsAtMoving && this.checkAllMoveSetsAtMoving()
+      //
       let newX, newY
-      if(this.onSlope) {
+      if(this.onRope) {
+        newX = this.x
+        newY = this.y + baseVy + ropeVy
+      } else if(this.onSlope) {
         if(vx > 0 && this.slopePosUpdate_right) { //right
           console.log( this.slopePosUpdate_right)
           newX = this.slopePosUpdate_right.x - this.slopePoint.x
@@ -172,7 +177,7 @@ export class BasicObj {
           this.movement.vy += ay
         }
         if(this.id === 'player') {
-          console.log(this.movement.vy)
+          // console.log(this.movement.vy)
         }
         //
         newX = this.x + baseVx + vx
@@ -222,6 +227,10 @@ export class BasicObj {
   }
   render(ctx, x, y) {
     this.move()
+    if(this.id === 'player') {
+      document.getElementById('uiText').innerText = `${ this.movement.moveSet }` 
+      document.getElementById('uiText2').innerText = this.attachRope
+    }
     // this.checkCollide()
     this.draw(ctx, x, y)
   }
@@ -600,13 +609,34 @@ export class ControllableObj extends BasicStaticImgObj {
           ...this.movement,
           vx: 0,
           vy: this.isInAir ? this.movement.vy / 2 : 0,
+          ropeVy: 0,
         }
       }
     })
   }
+  checkAllMoveSetsAtMoving() {
+    const checkMoveSet = (keyCode) => this.movement.moveSet.includes(keyCode)
+    //
+    const moveUp = checkMoveSet(38) || checkMoveSet(87)
+    const moveDown = checkMoveSet(40) || checkMoveSet(83)
+    if(moveUp || moveDown) {
+      // console.log('up')
+      if(this.attachRope) {
+        this.setProp('x', this.ropePosX)
+        this.setProp('movement', {
+          ...this.movement,
+          ropeVy: moveUp ? this.movement.vStandard * -1 : this.movement.vStandard * 1 
+        })
+        this.setProp('onRope', true) //set obj is on rope
+      }
+    }
+  }
   moveByUser(e) {
     const { keyCode } = e
-    if([37, 38, 39, 40, 65, 87, 68, 83].includes(keyCode)) {
+    // if([37, 38, 39, 40, 65, 87, 68, 83].includes(keyCode)) {
+    //   this.movement.isMove = true
+    // }
+    if([37, 39, 40, 65, 68, 83, 32].includes(keyCode)) {
       this.movement.isMove = true
     }
     const getMoveSet = (moveset, keyCode) => {
@@ -617,6 +647,7 @@ export class ControllableObj extends BasicStaticImgObj {
       }
     }
     this.movement.moveSet = getMoveSet(this.movement.moveSet, keyCode)
+    
     const checkMoveSet = (keyCode) => this.movement.moveSet.includes(keyCode)
     // console.log(this.movement.moveSet)
     //move by keyCode
@@ -634,8 +665,13 @@ export class ControllableObj extends BasicStaticImgObj {
       this.movement.vx = this.movement.vStandard * 1
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
-      // console.log('up')
+      console.log('up')
+    }
+    if(checkMoveSet(32)) { //space is jump
+      // console.log('jump')
       // this.movement.vx = 0
+      //reset onRope
+      this.setProp('onRope', false)
       //wall jump
       if(checkMoveSet(39) || checkMoveSet(68) || checkMoveSet(37) || checkMoveSet(65)) {
         this.attachWall && this.setProp('isInAir', false)
@@ -655,6 +691,10 @@ export class ControllableObj extends BasicStaticImgObj {
     if(checkMoveSet(40) || checkMoveSet(83)) {
       // console.log('down')
       // this.movement.vx = 0
+      this.onRope && this.setProp('movement', {
+        ...this.movement,
+        ropeVy: this.movement.vStandard * 1
+      })
       this.movement.vy = this.movement.vStandard * 1
     }
     // console.log(keyCode)

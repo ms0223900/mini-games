@@ -72,7 +72,10 @@ export default () => {
         </p>
         <button id={ 'restartBTN' }>{ 'Restart!' }</button>
       </div>
-      <h3><span>{ 'ui: ' }</span><span id={ 'uiText' }></span></h3>
+      <h3><span>{ 'keyCodes: ' }</span>
+        <span id={ 'uiText' }></span>
+        <span id={ 'uiText2' }></span>
+        <span id={ 'uiText3' }></span></h3>
       <div 
         id={ 'canvasContainer' }>
         <canvas 
