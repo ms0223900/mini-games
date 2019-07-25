@@ -11,6 +11,7 @@ import {
   Ropes,
   myPlayer,
   B01,
+  Springs,
 } from './components'
 import { 
   checkPlayerCollideWithPlatform,
@@ -135,6 +136,38 @@ class DashingGame extends Game {
       //   // myPlayer.isInAir = false
       //   myPlayer.useGravity = false
       // }
+    })
+    //
+    //springs
+    Springs.forEach(spr => {
+      spr.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      if(checkPlayerCollideWithPlatform(myPlayer, spr)) {
+        myPlayer.isInSpring = true
+      }
+      const playerNext = {
+        spec: {
+          ...myPlayer.spec,
+          x: myPlayer.x + myPlayer.movement.vx,
+          y: myPlayer.y + myPlayer.movement.vy,
+        }
+      }
+      const checkPlayPosAndSpring = () => (
+        myPlayer.y + myPlayer.height > spr.y + spr.height * 0.25
+      )
+      if(myPlayer.isInSpring && simpleCheckObjCollide(playerNext, spr)) {
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          ay: -0.5
+        })
+        myPlayer.isInAir = false
+      } else if(myPlayer.isInSpring && !simpleCheckObjCollide(myPlayer, spr)) {
+        myPlayer.isInSpring = false
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          ay: myPlayer.gravityAy,
+        })
+      }
+      
     })
     //
     //jump through platform type
@@ -267,6 +300,7 @@ class DashingGame extends Game {
     })
     // console.log(myPlayer.attachRope)
 
+    
 
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //

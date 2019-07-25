@@ -164,6 +164,15 @@ export const Rope = (x, y, height) => {
   return obj
 }
 
+export const Spring = (x, y, width=100, height=100) => {
+  const obj = new BasicObj({
+    id: 'spring', x, y,
+    width, height,
+    fillStyle: '#489621'
+  })
+  return obj
+}
+
 export const PF01 = PlatForm(80, 10, 100, 150)
 export const PF02 = PlatForm(80, 10, 150, 200)
 export const PF03 = PlatForm(80, 10, 200, 300)
@@ -196,7 +205,10 @@ export const Slopes = [S01, SL01, SL02]
 export const R01 = Rope(350, 400, 100)
 export const Ropes = [R01]
 
+export const Spr01 = Spring(1000, 400)
+export const Springs = [Spr01]
+
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(300, 200)
+export const myPlayer = Player(800, 100)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

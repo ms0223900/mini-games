@@ -559,12 +559,13 @@ const UILayer = () => new Layer()
 export class ControllableObj extends BasicStaticImgObj {
   constructor(props) {
     super(props)
+    this.gravityAy = 0.2
     this.movement = {
       ...this.movement,
       vStandard: 6,
       vx: 0,
       vy: 0,
-      ay: 0.2, //gravity
+      ay: this.gravityAy, //gravity
       moveSet: [],
       slopeX: 0,
       slopeY: 0,
