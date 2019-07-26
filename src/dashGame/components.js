@@ -1,11 +1,14 @@
 import { 
   BasicObj, 
+  BasicStaticImgObj,
   Triangle,
   PolyLine,
   ControllableObj ,
   Ball,
 } from '../game/gameLib'
 import { canvasSpec } from '../config'
+import SpringImage from '../images/spring.png'
+import arrowIcon from '../images/arrowIcon.jpg'
 
 export const PlatForm = (width=80, height=10, x, y, cloneId) => {
   const obj = new BasicObj({
@@ -16,6 +19,18 @@ export const PlatForm = (width=80, height=10, x, y, cloneId) => {
   return obj
 }
 
+export const SpeedUpPlatform = (width, height, x, y, speedUp, cloneId) => {
+  const obj = new BasicStaticImgObj({
+    id: 'speedUpPlatform', cloneId,
+    x, y, width, height,
+    fillStyle: '#dd0',
+    imgSrc: arrowIcon
+  })
+  obj.speedUp = speedUp
+  obj.dev = true
+  return obj
+}
+
 //horizontal moving platform(only x changed)
 export const MovingPlatForm = (width=80, height=10, x, y, cloneId, moveTo, moveVx=6, moveVy=0) => {
   const obj = new BasicObj({
@@ -23,6 +38,7 @@ export const MovingPlatForm = (width=80, height=10, x, y, cloneId, moveTo, moveV
     x, y, width, height,
     fillStyle: '#a0f',
   })
+  obj.useGravity = false
   obj.MPSpec = {
     dirNow: moveVx !== 0 ? 'right' : 'down',
     movePos: moveVx !== 0 ? x : y,
@@ -102,7 +118,7 @@ export const Player = (x, y, width=60, height=100) => {
   const obj = new ControllableObj({
     id: 'player',
     x, y, width, height,
-    fillStyle: '#0af',
+    fillStyle: '#0afadd',
   })
   obj.setProp('movement', {
     ...obj.movement,
@@ -165,11 +181,13 @@ export const Rope = (x, y, height) => {
 }
 
 export const Spring = (x, y, width=100, height=100) => {
-  const obj = new BasicObj({
+  const obj = new BasicStaticImgObj({
     id: 'spring', x, y,
     width, height,
-    fillStyle: '#489621'
+    fillStyle: '#489621',
+    imgSrc: SpringImage
   })
+  obj.dev = true
   return obj
 }
 
@@ -192,7 +210,7 @@ export const WB02 = WallBlock(100, 100, 200, 400)
 export const WB03 = WallBlock(100, 300, 670, 300)
 export const WB04 = WallBlock(100, 300, 800, 200)
 export const WB05 = WallBlock(800, 200, 900, 510)
-export const WB06 = WallBlock(800, 200, 1120, 450)
+export const WB06 = WallBlock(800, 200, 1120, 470)
 export const WBs = [WB01, WB02, WB03, WB04, WB05]
 
 export const S01 = Slope(100, 100, 1200, 420)
@@ -208,7 +226,10 @@ export const Ropes = [R01]
 export const Spr01 = Spring(1000, 400)
 export const Springs = [Spr01]
 
+export const SUP01 = SpeedUpPlatform(200, 20, 1400, 350, 3, 0)
+export const SpeedupPlatforms = [SUP01]
+
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(800, 100)
+export const myPlayer = Player(200, 100)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

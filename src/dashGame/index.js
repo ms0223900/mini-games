@@ -12,6 +12,7 @@ import {
   myPlayer,
   B01,
   Springs,
+  SpeedupPlatforms,
 } from './components'
 import { 
   checkPlayerCollideWithPlatform,
@@ -25,6 +26,7 @@ import {
 import { getReverseArr } from '../functions'
 import { Camera } from './Camera'
 import { simpleCheckObjCollide } from '../game/gameFunc'
+import springJump from './spring'
 
 let UITextBox
 window.onload = () => {
@@ -141,40 +143,50 @@ class DashingGame extends Game {
     //springs
     Springs.forEach(spr => {
       spr.render(this.ctx, -camera.offsetX, -camera.offsetY)
-      if(checkPlayerCollideWithPlatform(myPlayer, spr)) {
-        myPlayer.isInSpring = true
-      }
-      const playerNext = {
-        spec: {
-          ...myPlayer.spec,
-          x: myPlayer.x + myPlayer.movement.vx,
-          y: myPlayer.y + myPlayer.movement.vy,
-        }
-      }
-      const checkPlayPosAndSpring = () => (
-        myPlayer.y + myPlayer.height > spr.y + spr.height * 0.25
-      )
-      if(myPlayer.isInSpring && simpleCheckObjCollide(playerNext, spr)) {
-        myPlayer.setProp('movement', {
-          ...myPlayer.movement,
-          ay: -0.5
-        })
-        myPlayer.isInAir = false
-      } else if(myPlayer.isInSpring && !simpleCheckObjCollide(myPlayer, spr)) {
-        myPlayer.isInSpring = false
-        myPlayer.setProp('movement', {
-          ...myPlayer.movement,
-          ay: myPlayer.gravityAy,
-        })
-      }
       
+      springJump(myPlayer, spr)
     })
     //
+    //speed up platforms
+    SpeedupPlatforms.forEach(spf => {
+      spf.render(this.ctx, -camera.offsetX, -camera.offsetY)
+
+      const collideRes = checkPlayerCollideWithPlatform(myPlayer, spf)
+      // console.log(collideRes)
+        
+      if(myPlayer.whichSpf === spf.cloneId) { //should detect same platform
+        if(!collideRes) {
+          myPlayer.whichSpf = null
+          myPlayer.setProp('movement', {
+            ...myPlayer.movement,
+            baseVx: 0
+          })
+          myPlayer.setProp('movement', {
+            ...myPlayer.movement,
+            vx: myPlayer.movement.vx + spf.speedUp
+          })
+        }
+      }
+      if(collideRes) {
+        myPlayer.collideWithPlatform(spf.y)
+        //moving platform
+        if(spf.id === 'speedUpPlatform') {
+          //temp platform only horizontal movement
+          myPlayer.setProp('movement', {
+            ...myPlayer.movement,
+            baseVx: spf.speedUp
+          })
+          // myPlayer.useGravity = false
+          myPlayer.whichSpf = spf.cloneId
+        }
+      }
+    })
     //jump through platform type
     myPlayer.render(this.ctx, -camera.offsetX, -camera.offsetY)
+    // myPlayer.isInAir = false
     myPlayer.movement = {
       ...myPlayer.movement,
-      baseVx: 0,
+      // baseVx: 0,
       baseVy: 0,
     }
     myPlayer.useGravity = true
@@ -190,6 +202,16 @@ class DashingGame extends Game {
         }
       }
       if(collideRes) {
+        // myPlayer.movement = {
+        //   ...myPlayer.movement,
+        //   baseVx: 0,
+        // }
+        if(myPlayer.movement.moveSet.length === 0) {
+          myPlayer.movement = {
+            ...myPlayer.movement,
+            vx: 0,
+          }
+        }
         myPlayer.collideWithPlatform(pf.y)
         //moving platform
         if(pf.id === 'movingPlatform') {
@@ -300,7 +322,6 @@ class DashingGame extends Game {
     })
     // console.log(myPlayer.attachRope)
 
-    
 
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //

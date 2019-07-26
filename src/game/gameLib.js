@@ -49,6 +49,11 @@ export class BasicObj {
       x: (this.width - this.hitbox.w) / 2,
       y: (this.height - this.hitbox.h) / 2,
     }
+    this.hitboxSpec = {
+      x: this.x,
+      y: this.y,
+      ...this.hitbox
+    }
     this.spec = {
       x: this.x + this.hitboxOffset.x,
       y: this.y + this.hitboxOffset.y,
@@ -60,6 +65,7 @@ export class BasicObj {
       isMove: false,
       slope: 0,
       vBasic: 6,
+      aBasic: 1,
       baseVx: 0, //基準座標速度vx
       baseVy: 0, //基準座標速度vy
       vx: 4,
@@ -126,10 +132,10 @@ export class BasicObj {
         }
         //
         if(collideRes.includes('yAxis')) {
-          this.movement = {
-            ...this.movement,
-            vy: this.wall.useBounce ? this.movement.vy * -1 : 0
-          }
+          // this.movement = {
+          //   ...this.movement,
+          //   vy: this.wall.useBounce ? this.movement.vy * -1 : 0
+          // }
           // this.y < this.wall.spec.h / 2 ? 
           //   this.setProp('y', 1) : 
           //   this.setProp('y', this.wall.spec.h - this.height)
@@ -149,8 +155,11 @@ export class BasicObj {
     }
   }
   move() {
-    const { baseVx, baseVy, vx, vy, ay, ropeVy } = this.movement
+    const { baseVx, baseVy, vx, vy, ax, ay, ropeVy, vBasic } = this.movement
     this.newBehavior.forEach(b => b(this))
+    // const newVx = 
+    //   Math.abs(vx + ax) <= Math.abs(vBasic) ? vx + ax : ( vx + ax > 0 ? vBasic : -vBasic)
+    // this.movement.vx = newVx
     if(this.movement.isMove) {
       this.wallBounce()
       this.checkAllMoveSetsAtMoving && this.checkAllMoveSetsAtMoving()
@@ -174,12 +183,13 @@ export class BasicObj {
         }
       } else {
         if(this.useGravity) {
-          this.movement.vy += ay
+          this.movement.vy += this.gravityAy
         }
         if(this.id === 'player') {
           // console.log(this.movement.vy)
         }
         //
+        // newX = this.x + baseVx + newVx
         newX = this.x + baseVx + vx
         newY = this.y + baseVy + vy
       }
@@ -311,17 +321,18 @@ export class BasicStaticImgObj extends BasicObj {
     const imgNow = this.status[statusNow]
     // if(this.bounceStart) { this.bounceLoop() }
     this.image.src = imgNow
-    ctx.save()                              
+    ctx.save()   
+    if(this.dev) {
+      ctx.fillStyle = this.fillStyle
+      ctx.fillRect(x, y, w, h)
+    }                           
     ctx.drawImage(
       this.image, 
-      0, //due to translate
-      0, 
+      x, //due to translate
+      y, 
       this.width, 
       this.height
     )
-    if(this.dev) {
-      ctx.fillRect(x, y, w, h)
-    }
     ctx.restore()
   }
 }
@@ -608,11 +619,13 @@ export class ControllableObj extends BasicStaticImgObj {
       if(this.movement.moveSet.length === 0) {
         this.movement = {
           ...this.movement,
-          vx: 0,
+          ax: 0,
+          // vx: 0,
           vy: this.isInAir ? this.movement.vy / 2 : 0,
           ropeVy: 0,
         }
       }
+      
     })
   }
   checkAllMoveSetsAtMoving() {
@@ -658,12 +671,14 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.movement.vy = 0
       // const { slopeX, slopeY } = this.movement
       this.movement.vx = this.movement.vStandard * -1
+      // this.movement.ax = this.movement.aBasic * -1
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
       // console.log('right')
       console.log(this.attachWall)
       // this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
+      // this.movement.ax = this.movement.aBasic * 1
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
       console.log('up')
