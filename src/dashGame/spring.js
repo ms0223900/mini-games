@@ -1,6 +1,7 @@
 
 import { 
   checkPlayerCollideWithPlatform,
+  getFrictionAx
 } from './gameFn'
 import { simpleCheckObjCollide } from '../game/gameFunc'
 
@@ -30,7 +31,8 @@ const springJump = (player, spring) => {
     //
     player.setProp('movement', {
       ...player.movement,
-      ay: -0.5
+      ax: getFrictionAx(player.movement.vx, 0.2),
+      ay: -1
     })
     //update spring img
     const playerBottom = playerNext.spec.y + player.height
@@ -42,7 +44,8 @@ const springJump = (player, spring) => {
     player.isInSpring = false
     player.setProp('movement', {
       ...player.movement,
-      ay: player.gravityAy,
+      ax: 0,
+      ay: 0,
     })
     spring.setProp('y', spring.hitboxSpec.y)
     spring.setProp('height', spring.hitboxSpec.h)

@@ -80,7 +80,9 @@ export const MovingPlatForm = (width=80, height=10, x, y, cloneId, moveTo, moveV
     }
     obj.MPSpec.movePos = 
       (dirNow === 'left' || dirNow === 'right' ) ? obj.x : obj.y
+    // console.log(movePos)
   }
+
   obj.newBehavior = [...obj.newBehavior, moveBF]
   return obj
 }
@@ -230,6 +232,6 @@ export const SUP01 = SpeedUpPlatform(200, 20, 1400, 350, 3, 0)
 export const SpeedupPlatforms = [SUP01]
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(200, 100)
+export const myPlayer = Player(1200, 100)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

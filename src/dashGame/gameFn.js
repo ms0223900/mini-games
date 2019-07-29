@@ -220,6 +220,14 @@ export const objMoveBaseOnLines = (obj, points) => {
   let onWhichLine
   for (let i = 0; i < vectors.length; i++) {
     const v = vectors[i]
+    if(i + 1 < vectors.length) {
+      const vNext = vectors[i + 1]
+      if(checkPointAtLine(obj, v.A, v.B) && checkPointAtLine(obj, vNext.A, vNext.B)) {
+        onWhichLine = i + 1
+        // console.log(onWhichLine)
+        break
+      }
+    }
     if(checkPointAtLine(obj, v.A, v.B)) {
       onWhichLine = i
       break
@@ -248,5 +256,17 @@ export const objMoveBaseOnLines = (obj, points) => {
     }
   } else {
     return false
+  }
+}
+
+export const getFrictionAx = (vx, ax=2) => {
+  if(vx !== 0) {
+    if(Math.abs(vx + ax) > 0) {
+      return vx > 0 ? -ax : ax
+    } else {
+      return vx > 0 ? -vx : vx
+    }
+  } else {
+    return 0
   }
 }

@@ -168,29 +168,42 @@ export class BasicObj {
       if(this.onRope) {
         newX = this.x
         newY = this.y + baseVy + ropeVy
-      } else if(this.onSlope) {
-        if(vx > 0 && this.slopePosUpdate_right) { //right
-          console.log( this.slopePosUpdate_right)
-          newX = this.slopePosUpdate_right.x - this.slopePoint.x
-          newY = this.slopePosUpdate_right.y - this.slopePoint.y
-        } else if(vx < 0 && this.slopePosUpdate_left) {
-          newX = this.slopePosUpdate_left.x - this.slopePoint.x
-          newY = this.slopePosUpdate_left.y - this.slopePoint.y
+      } else if(this.onSlope) { 
+        if(this.movement.moveSet.length > 0) {
+          if(vx > 0 && this.slopePosUpdate_right) { //right
+            console.log( this.slopePosUpdate_right)
+            newX = this.slopePosUpdate_right.x - this.slopePoint.x
+            newY = this.slopePosUpdate_right.y - this.slopePoint.y
+          } else if(vx < 0 && this.slopePosUpdate_left) {
+            newX = this.slopePosUpdate_left.x - this.slopePoint.x
+            newY = this.slopePosUpdate_left.y - this.slopePoint.y
+          } else {
+            // console.log('onSLopee')
+            // this.updateSpec(this.x, this.y)
+            return 
+          }
+          // this.movement.vx = 0 
         } else {
-          // console.log('onSLopee')
-          // this.updateSpec(this.x, this.y)
-          return 
+          newX = this.x
+          newY = this.y
+          this.movement.vx = 0 
         }
       } else {
         if(this.useGravity) {
-          this.movement.vy += this.gravityAy
+          this.movement.vy += (this.gravityAy + ay)
         }
         if(this.id === 'player') {
           // console.log(this.movement.vy)
         }
         //
         // newX = this.x + baseVx + newVx
-        newX = this.x + baseVx + vx
+        //friction
+        let newVx = vx
+        if(this.id !== 'movingPlatform') {
+          newVx = Math.abs(vx + ax) === 0 ? 0 : vx + ax
+          this.movement.vx = newVx
+        }
+        newX = this.x + baseVx + newVx
         newY = this.y + baseVy + vy
       }
       this.x = newX
@@ -576,7 +589,7 @@ export class ControllableObj extends BasicStaticImgObj {
       vStandard: 6,
       vx: 0,
       vy: 0,
-      ay: this.gravityAy, //gravity
+      // ay: this.gravityAy, //gravity
       moveSet: [],
       slopeX: 0,
       slopeY: 0,

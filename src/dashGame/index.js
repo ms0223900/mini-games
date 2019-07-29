@@ -46,6 +46,14 @@ class DashingGame extends Game {
   newGameEvent(e) {
     myPlayer.moveByUser(e)
   }
+  checkNoMoveSets() {
+    if(myPlayer.movement.moveSet.length === 0) {
+      myPlayer.movement = {
+        ...myPlayer.movement,
+        vx: 0,
+      }
+    }
+  }
   render() {
     this.ctx.clearRect(0, 0, this.canvasSpec.width, this.canvasSpec.height)
     this.drawBG()
@@ -86,8 +94,10 @@ class DashingGame extends Game {
         // myPlayer.attachWall = false
         myPlayer.setProp('movement', {
           ...myPlayer.movement,
+          // ax: 0,
           vy: 0,
         })
+        this.checkNoMoveSets()
         collideRes === 'bottom' ? 
           myPlayer.setProp('y', wb.y - myPlayer.height) :
           myPlayer.setProp('y', wb.y + wb.height)
@@ -186,7 +196,7 @@ class DashingGame extends Game {
     // myPlayer.isInAir = false
     myPlayer.movement = {
       ...myPlayer.movement,
-      // baseVx: 0,
+      baseVx: 0,
       baseVy: 0,
     }
     myPlayer.useGravity = true
@@ -206,12 +216,7 @@ class DashingGame extends Game {
         //   ...myPlayer.movement,
         //   baseVx: 0,
         // }
-        if(myPlayer.movement.moveSet.length === 0) {
-          myPlayer.movement = {
-            ...myPlayer.movement,
-            vx: 0,
-          }
-        }
+        this.checkNoMoveSets()
         myPlayer.collideWithPlatform(pf.y)
         //moving platform
         if(pf.id === 'movingPlatform') {
@@ -237,16 +242,17 @@ class DashingGame extends Game {
     //   // B01.setProp('y', lastPoint.y)
     //   SL01.setProp('pointsForLines', getReverseArr(SL01.pointsForLines))
     // }
+
     //
-    //test player collide with slope
-      const playerSlopePoint = {
-        x: myPlayer.x + myPlayer.slopePoint.x,
-        y: myPlayer.y + myPlayer.slopePoint.y,
-        movement: myPlayer.movement
-      }
+    //test player collide with slope(SL02 case)
+    const playerSlopePoint = {
+      x: myPlayer.x + myPlayer.slopePoint.x,
+      y: myPlayer.y + myPlayer.slopePoint.y,
+      movement: myPlayer.movement
+    }
     const playerSlopePoint_next = { //point B
-      x: myPlayer.x + myPlayer.slopePoint.x + myPlayer.movement.vx,
-      y: myPlayer.y + myPlayer.slopePoint.y + myPlayer.movement.vy,
+      x: playerSlopePoint.x + myPlayer.movement.vx,
+      y: playerSlopePoint.y + myPlayer.movement.vy,
     }
     const playerSlopePoints = [playerSlopePoint, playerSlopePoint_next]
     const slopeLines = getVectors(SL02.pointsForLines)
@@ -257,6 +263,9 @@ class DashingGame extends Game {
       //
       const slopeMoveNewPos_right = objMoveBaseOnLines(playerSlopePoint, SL02.pointsForLines)
       const slopeMoveNewPos_left = objMoveBaseOnLines(playerSlopePoint, getReverseArr(SL02.pointsForLines))
+      //
+      const pointLineRes_next = checkPointAtLine(playerSlopePoint_next, slopeLine.A, slopeLine.B)
+      
       
       const setNewPos_rightOrLeft = () => {
         myPlayer.slopePosUpdate_right = slopeMoveNewPos_right
@@ -265,6 +274,22 @@ class DashingGame extends Game {
           // console.log('falsesss')
           myPlayer.setProp('onSlope', false)
         }
+      }
+      //
+      const checkPointIsAtPoint = () => {
+        for (let i = 0; i < SL02.pointsForLines.length; i++) {
+          const point = SL02.pointsForLines[i];
+          if(point.x === playerSlopePoint.x && point.y === playerSlopePoint.y) {
+            // window.alert('hi!')
+            console.log(playerSlopePoint)
+            // myPlayer.setProp('x', myPlayer.x - 20)
+            // setNewPos_rightOrLeft()
+            return true
+          }
+        }
+      }
+      if(checkPointIsAtPoint()) {
+        break
       }
       //剛好在末端附近(是onSlope, 但是往左或往右沒有值)
       if((!slopeMoveNewPos_right || !slopeMoveNewPos_left) && myPlayer.onSlope) {
@@ -277,6 +302,7 @@ class DashingGame extends Game {
         // console.log(myPlayer.x + myPlayer.slopePoint.x, myPlayer.y + myPlayer.slopePoint.y, SL02.pointsForLines)
         setNewPos_rightOrLeft()
         break 
+        //enter the slope area
       } else {
         if(res) {
           // window.alert('collide')
@@ -287,14 +313,12 @@ class DashingGame extends Game {
             ...myPlayer.movement,
             vy: 0,
             vx: 0,
-            // ay: 0,
+            // vx: 0,
           })
           setNewPos_rightOrLeft()
-          //
           // console.log(myPlayer.slopePosUpdate_right)
           myPlayer.setProp('isInAir', false)
           myPlayer.setProp('onSlope', true)
-
           // myPlayer.setProp('useGravity', false)
           break
         }
