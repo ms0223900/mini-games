@@ -341,6 +341,11 @@ export const getVelocity = (p1, p2, v) => {
     deg,
   })
 }
+export const getDeg = (deg, xOrY) => (
+  xOrY === 'x' ? 
+    Math.cos(deg * Math.PI / 180) : Math.sin(deg * Math.PI / 180)
+)  
+
 export const getAngleVelocity = (deg, v) => ({
   vx: v * Math.cos(deg * Math.PI / 180),
   vy: v * Math.sin(deg * Math.PI / 180),

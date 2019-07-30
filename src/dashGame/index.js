@@ -23,10 +23,11 @@ import {
   objMoveBaseOnLines,
   getVectors,
   checkPointAtLine,
+  getObjAllSidesLine,
 } from './gameFn'
 import { getReverseArr } from '../functions'
 import { Camera } from './Camera'
-import { simpleCheckObjCollide } from '../game/gameFunc'
+import { simpleCheckObjCollide, getDeg } from '../game/gameFunc'
 import springJump from './spring'
 
 let UITextBox
@@ -351,7 +352,57 @@ class DashingGame extends Game {
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
     //
     RotatingLBs.forEach(lb => {
+      const { x, y, height, width } = lb
       lb.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      //check collide
+      const deg = lb.rotate
+      //rotatedBlockPoints(from top left)
+      const degCos = getDeg(deg, 'x')
+      const degSin = getDeg(deg, 'y')
+
+      const rotatedBlockPoint_A = { x, y }
+      const rotatedBlockPoint_B = {
+        x: x + degCos * width, 
+        y: y + degSin * width,
+      }
+      const rotatedBlockPoint_C = {
+        x: rotatedBlockPoint_B.x - degSin * height,
+        y: rotatedBlockPoint_B.y + degCos * height,
+      }
+      const rotatedBlockPoint_D = {
+        x: rotatedBlockPoint_C.x - degCos * width,
+        y: rotatedBlockPoint_C.y - degSin * width,
+      }
+      //
+      const rotatedBlockLine_Top = [
+        rotatedBlockPoint_A, rotatedBlockPoint_B
+      ]
+      const rotatedBlockLine_Right = [
+        rotatedBlockPoint_B, rotatedBlockPoint_C
+      ]
+      const rotatedBlockLine_Bottom = [
+        rotatedBlockPoint_C, rotatedBlockPoint_D
+      ]
+      const rotatedBlockLines = [
+        rotatedBlockLine_Top, rotatedBlockLine_Right, rotatedBlockLine_Bottom
+      ]
+      const playerAllSidesLine = getObjAllSidesLine(myPlayer)
+
+      lb.setProp('fillStyle', '#a00')
+      for (let i = 0; i < playerAllSidesLine.length; i++) {
+        const playerLine = playerAllSidesLine[i]
+        for (let j = 0; j < rotatedBlockLines.length; j++) {
+          const line = rotatedBlockLines[j];
+          if(checkLineIntersection(playerLine, line)) {
+            lb.setProp('fillStyle', '#aaa')
+            break
+          }
+        }
+      }
+
+      // if(checkLineIntersection(playerTop, rotatedBlockLine_Top)) {
+      //   window.alert('hey!')
+      // }
     })
     //
     !this.isPause && requestAnimationFrame( this.render.bind(this) )

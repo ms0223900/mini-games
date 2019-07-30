@@ -141,6 +141,17 @@ export const checkObjCollideWithBlockSide = (player, obj, side='bottom') => {
 }
 
 const sides = ['top', 'right', 'bottom', 'left']
+
+export const getObjAllSidesLine = (obj) => {
+  const res = []
+  for (let i = 0; i < sides.length; i++) {
+    const side = sides[i];
+    const pointAB = getABpointsBySide(obj, obj, side)
+    res[i] = [pointAB.playerA, pointAB.playerB]
+  }
+  return res
+}
+
 export const checkSolidBlockCollide = (player, block) => {
   for (let i = 0; i < sides.length; i++) {
     const res = checkObjCollideWithBlockSide(player, block, sides[i])
