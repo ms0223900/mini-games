@@ -13,6 +13,7 @@ import {
   B01,
   Springs,
   SpeedupPlatforms,
+  RotatingLBs,
 } from './components'
 import { 
   checkPlayerCollideWithPlatform,
@@ -348,6 +349,10 @@ class DashingGame extends Game {
 
 
     B01.render(this.ctx, -camera.offsetX, -camera.offsetY)
+    //
+    RotatingLBs.forEach(lb => {
+      lb.render(this.ctx, -camera.offsetX, -camera.offsetY)
+    })
     //
     !this.isPause && requestAnimationFrame( this.render.bind(this) )
   }

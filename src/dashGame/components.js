@@ -193,6 +193,21 @@ export const Spring = (x, y, width=100, height=100) => {
   return obj
 }
 
+export const RotatingLongBlock = (x, y, width=80, height=20) => {
+  const obj = new BasicStaticImgObj({
+    id: 'rotatingLB', x, y,
+    width, height,
+    fillStyle: '#a00',
+  })
+  obj.dev = true
+  // obj.rotate = 20
+  const rotate = (obj) => {
+    obj.setProp('rotate', obj.rotate + 1)
+  }
+  obj.newBehavior = [...obj.newBehavior, rotate]
+  return obj
+}
+
 export const PF01 = PlatForm(80, 10, 100, 150)
 export const PF02 = PlatForm(80, 10, 150, 200)
 export const PF03 = PlatForm(80, 10, 200, 300)
@@ -231,7 +246,10 @@ export const Springs = [Spr01]
 export const SUP01 = SpeedUpPlatform(200, 20, 1400, 350, 3, 0)
 export const SpeedupPlatforms = [SUP01]
 
+export const RLB01 = RotatingLongBlock(300, 200)
+export const RotatingLBs = [RLB01]
+
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(1200, 100)
+export const myPlayer = Player(350, 100)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

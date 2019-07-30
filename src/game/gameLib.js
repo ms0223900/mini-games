@@ -229,7 +229,8 @@ export class BasicObj {
     ctx.save()
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
-    ctx.fillRect(x, y, this.width, this.height)
+    // ctx.fillRect(x, y, this.width, this.height)
+    ctx.fillRect(0, 0, this.width, this.height)
     ctx.stroke()
     ctx.fill()
     ctx.restore()
@@ -239,7 +240,9 @@ export class BasicObj {
     ctx.beginPath()
     ctx.globalAlpha = this.opacity
     //translate canvas center
-    ctx.translate(this.x, this.y)
+    ctx.translate(this.x + x, this.y + y)
+    // if(this.id !== 'rotatingLB') { ctx.translate(this.x, this.y) }
+    // else { ctx.translate(this.x - y, this.y - x) }
     ctx.rotate(this.rotate * Math.PI / 180)
     if(this.blinkSpec.useBlink) {
       this.blinkEffect(ctx)
@@ -273,9 +276,9 @@ export class Triangle extends BasicObj {
     ctx.fillStyle = this.fillStyle
     ctx.strokeStyle = this.strokeStyle
     // ctx.fillRect(x, y, this.width, this.height)
-    ctx.moveTo(x, y + this.height)
-    ctx.lineTo(x + this.width, y + this.height)
-    ctx.lineTo(x + this.width, y)
+    ctx.moveTo(0, 0 + this.height)
+    ctx.lineTo(0 + this.width, 0 + this.height)
+    ctx.lineTo(0 + this.width, 0)
     ctx.stroke()
     ctx.fill()
     ctx.restore()
@@ -306,8 +309,8 @@ export class PolyLine extends BasicObj {
     // ctx.fillRect(x, y, this.width, this.height)
     for (let i = 0; i < this.points.length; i++) {
       i === 0 ? 
-      ctx.moveTo(x + this.points[i].x, y + this.points[i].y) :
-      ctx.lineTo(x + this.points[i].x, y + this.points[i].y)
+      ctx.moveTo(0 + this.points[i].x, 0 + this.points[i].y) :
+      ctx.lineTo(0 + this.points[i].x, 0 + this.points[i].y)
     }
     ctx.stroke()
     // ctx.fill()
@@ -337,12 +340,13 @@ export class BasicStaticImgObj extends BasicObj {
     ctx.save()   
     if(this.dev) {
       ctx.fillStyle = this.fillStyle
-      ctx.fillRect(x, y, w, h)
+      // ctx.fillRect(x, y, w, h)
+      ctx.fillRect(0, 0, w, h)
     }                           
     ctx.drawImage(
       this.image, 
-      x, //due to translate
-      y, 
+      0, //due to translate
+      0, 
       this.width, 
       this.height
     )
