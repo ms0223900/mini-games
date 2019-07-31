@@ -192,9 +192,6 @@ export class BasicObj {
         if(this.useGravity) {
           this.movement.vy += (this.gravityAy + ay)
         }
-        if(this.id === 'player') {
-          // console.log(this.movement.vy)
-        }
         //
         // newX = this.x + baseVx + newVx
         //friction

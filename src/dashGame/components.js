@@ -88,6 +88,28 @@ export const MovingPlatForm = (width=80, height=10, x, y, cloneId, moveTo, moveV
 }
 //
 
+export const TimeoutDropPlatform = (x, y, time, cloneId=10, width=60, height=20) => {
+  const obj = new BasicStaticImgObj({
+    id: 'dropPlatform', cloneId,
+    x, y, 
+    width, height,
+    fillStyle: '#9a0',
+  })
+  obj.useGravity = false
+  obj.dev = true
+  obj.dropTime = {
+    timeNow: 0,
+    maxTime: time,
+    timer: null
+  }
+  obj.movement = {
+    ...obj.movement,
+    vx: 0,
+    vy: 0,
+  }
+  return obj
+}
+
 export const WallBlock = (width=80, height=80, x, y, cloneId) => {
   const obj = new BasicObj({
     id: 'wallBlock', cloneId,
@@ -217,8 +239,9 @@ export const PF06 = PlatForm(80, 10, 500, 450)
 export const PF07 = PlatForm(800, 200, 1290, 410)
 export const MPF01 = MovingPlatForm(100, 20, 300, 300, 0, 460, 2)
 export const MPF02 = MovingPlatForm(100, 20, 600, 100, 1, 400, 0, 2)
+export const TDPF01 = TimeoutDropPlatform(350, 250, 1000)
 export const ground = PlatForm(10000, 10, 0, canvasSpec.height - 10)
-export const PFs = [PF01, PF02, PF03, PF04, PF05, PF06, PF07, ground, MPF01, MPF02]
+export const PFs = [PF01, PF02, PF03, PF04, PF05, PF06, PF07, ground, MPF01, MPF02, TDPF01]
 console.log(MPF02)
 //
 
@@ -234,7 +257,7 @@ export const S01 = Slope(100, 100, 1200, 420)
 export const SL01 = SlopeLines(100, 100)
 export const SL02 = SlopeLines(900, 200)
 export const B01 = ball(100 + 120, 100 + 300)
-export const Slopes = [S01, SL01, SL02]
+export const Slopes = [SL02]
 // console.log(S01)
 
 export const R01 = Rope(350, 400, 100)
@@ -248,6 +271,8 @@ export const SpeedupPlatforms = [SUP01]
 
 export const RLB01 = RotatingLongBlock(300, 200)
 export const RotatingLBs = [RLB01]
+
+// export const TimeoutDropPFs = [TDPF01]
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
 export const myPlayer = Player(350, 100)
