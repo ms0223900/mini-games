@@ -47,9 +47,10 @@ const detectRotatingBlock = (player, block) => {
       const line = rotatedBlockLines[j];
       if(checkLineIntersection(playerLine, line)) {
         block.setProp('fillStyle', '#aaa')
-        break
+        return true
       }
     }
   }
+  
 }
 export default detectRotatingBlock

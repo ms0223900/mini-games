@@ -33,6 +33,7 @@ import springJump from './spring'
 import detectRotatingBlock from './rotatingBlock'
 import climbRope from './rope'
 import moveOnSlope from './slope'
+import shake from './shakeFn'
 
 let UITextBox
 window.onload = () => {
@@ -40,7 +41,7 @@ window.onload = () => {
 }
 
 
-const camera = Camera(960, 540)
+const camera = new Camera({ maxWidth: 960, maxHeight: 540 })
 //
 
 class DashingGame extends Game {
@@ -70,16 +71,13 @@ class DashingGame extends Game {
       x: myPlayer.x + myPlayer.width / 2,
       y: myPlayer.y + myPlayer.height / 2,
     }
-    //camera move defined by player
-    camera.updatePos(playerCenter.x, playerCenter.y)
-    // camera.vx = 2
-    // camera.move()
-    // if(camera.detectIsOutofBound(myPlayer)) {
-    //   this.isPause = true
-    //   window.alert('you die.')
-    // }
-    // console.log(camera)
-    //
+    
+    //rotating blocks
+    RotatingLBs.forEach(lb => {
+      lb.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      const res = detectRotatingBlock(myPlayer, lb)
+      res && camera.shake('offsetX')
+    })
     
     //myPlayerInit
     myPlayer.attachWall = false
@@ -209,21 +207,27 @@ class DashingGame extends Game {
               pf.dropTime.timeNow += 1000
             }, 1000)
           }) 
-          
-          console.log(pf.dropTime.timer, pf.dropTime.timeNow)
+          pf.shake()
+          // console.log(pf.dropTime.timer, pf.dropTime.timeNow)
           if(pf.dropTime.timeNow >= pf.dropTime.maxTime) {
-            console.log('hey')
+            console.log('droping!')
             pf.setProp('fillStyle', '#11a')
             setTimeout(() => {
               pf.setProp('dropTime', {
                 ...dropTime,
                 timeNow: 0,
               })
-            }, 500)
+              pf.setProp('movement', {
+                ...pf.movement,
+                isMove: false,
+                vy: 0
+              })
+              pf.setProp('y', pf.prevProps.y) //back to origin position
+            }, 2500)
             pf.setProp('movement', {
               ...pf.movement,
               isMove: true,
-              vy: 6
+              vy: 3
             })
           }
         }
@@ -239,6 +243,7 @@ class DashingGame extends Game {
       
 
     })
+    
     //
     //test player collide with slope(SL02 case)
     Slopes.forEach(sl => {
@@ -250,12 +255,10 @@ class DashingGame extends Game {
       rope.render(this.ctx, -camera.offsetX, -camera.offsetY)
       climbRope(myPlayer, rope)
     })
-    //rotating blocks
-    RotatingLBs.forEach(lb => {
-      lb.render(this.ctx, -camera.offsetX, -camera.offsetY)
-      detectRotatingBlock(myPlayer, lb)
-    })
-    
+
+
+    //camera move defined by player
+    camera.updatePos(playerCenter.x, playerCenter.y)
     !this.isPause && requestAnimationFrame( this.render.bind(this) )
   }
 }

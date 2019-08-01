@@ -327,6 +327,40 @@ export class BasicStaticImgObj extends BasicObj {
     this.imgSrc = imgSrc
     this.image = new Image()
     this.image.src = this.imgSrc
+    //shake props
+    this.shakeProps = {
+      shakeDist: 2,
+      shakeFreq: 5,
+      shakeTimes: 0,
+      shakeI: 0,
+      shakeDirNow: 'right'
+    }
+  }
+  shake(shakePara='x') { //horizontal shake
+    const { shakeDist, shakeFreq, shakeDirNow, shakeI, shakeTimes } = this.shakeProps
+    //
+    if(shakeTimes % 2 === 0) {
+      shakeTimes === 0 ? 
+        this.setProp(shakePara, this[shakePara] + shakeDist / 2) : this.setProp(shakePara, this[shakePara] + shakeDist)
+    } else {
+      this.setProp(shakePara, this[shakePara] - shakeDist)
+    }
+    shakeDirNow === 'right' ? this.setProp('shakeProps', {
+      ...this.shakeProps,
+      shakeDirNow: 'left',
+    }) : 
+    this.setProp('shakeProps', {
+      ...this.shakeProps,
+      shakeDirNow: 'right',
+    })
+    //
+    this.setProp('shakeProps', {
+      ...this.shakeProps,
+      shakeI: shakeI + 1,
+      shakeTimes: 
+        (shakeI !== 0 && shakeI % shakeFreq === 0) ? shakeTimes + 1 : shakeTimes,
+    })
+    return this
   }
   drawOnCanvas(ctx, x, y) {
     const { w, h } = this.spec

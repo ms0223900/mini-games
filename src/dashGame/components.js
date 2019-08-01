@@ -95,6 +95,11 @@ export const TimeoutDropPlatform = (x, y, time, cloneId=10, width=60, height=20)
     width, height,
     fillStyle: '#9a0',
   })
+  obj.prevProps = {
+    ...obj.prevProps,
+    x, 
+    y,
+  }
   obj.useGravity = false
   obj.dev = true
   obj.dropTime = {
@@ -147,6 +152,7 @@ export const Player = (x, y, width=60, height=100) => {
   obj.setProp('movement', {
     ...obj.movement,
     isMove: true,
+    vStandard: 5,
     vx: 0,
     vy: 6,
   })
@@ -275,6 +281,6 @@ export const RotatingLBs = [RLB01]
 // export const TimeoutDropPFs = [TDPF01]
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(350, 100)
+export const myPlayer = Player(200, 100)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)
