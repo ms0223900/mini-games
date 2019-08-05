@@ -25,12 +25,14 @@ export class BasicObj {
     collideObjs=[], 
     movement=null, 
     useWall=false, 
+    useGravity=true,
     hitbox=null 
   }) {
     //basic info
     this.id = id
     this.cloneId = cloneId
     this.type = type
+    this.display = true
     this.health = health
     //
     this.zoomRatio = zoomRatio //origin is top left
@@ -39,8 +41,10 @@ export class BasicObj {
     this.width = width * this.zoomRatio
     this.height = height * this.zoomRatio
     this.rotate = rotate
+    this.direction = 'right'
     //
     this.dev = false
+    this.isAttacked = false
     this.hitbox = hitbox || {
       w: this.width,
       h: this.height,
@@ -73,7 +77,8 @@ export class BasicObj {
       ax: 0,
       ay: 0,
     }
-    this.useGravity = true
+    this.gravityAy = 0.2
+    this.useGravity = useGravity
     this.onSlope = false
     this.newBehavior = []
     this.collideObjs = collideObjs
@@ -196,7 +201,7 @@ export class BasicObj {
         // newX = this.x + baseVx + newVx
         //friction
         let newVx = vx
-        if(this.id !== 'movingPlatform') {
+        if(this.id !== 'movingObj') {
           newVx = Math.abs(vx + ax) === 0 ? 0 : vx + ax
           this.movement.vx = newVx
         }
@@ -252,10 +257,11 @@ export class BasicObj {
     this.move()
     if(this.id === 'player') {
       document.getElementById('uiText').innerText = `${ this.movement.moveSet }` 
-      document.getElementById('uiText2').innerText = this.attachRope
+      document.getElementById('uiText2').innerText = 
+        `x: ${ parseInt(this.x) }, y: ${ parseInt(this.y) }`
     }
     // this.checkCollide()
-    this.draw(ctx, x, y)
+    this.display && this.draw(ctx, x, y)
   }
 }
 
@@ -328,38 +334,46 @@ export class BasicStaticImgObj extends BasicObj {
     this.image = new Image()
     this.image.src = this.imgSrc
     //shake props
-    this.shakeProps = {
+    this.shakePropsInit = {
+      shakeStart: false,
       shakeDist: 2,
-      shakeFreq: 5,
+      shakeFreq: 2, //n frame shake once
       shakeTimes: 0,
-      shakeI: 0,
+      shakeTimesAtOnce: 6,
+      shakeI: 0, //for count(not each frame should shake!)
       shakeDirNow: 'right'
     }
+    this.shakeProps = this.shakePropsInit
   }
   shake(shakePara='x') { //horizontal shake
-    const { shakeDist, shakeFreq, shakeDirNow, shakeI, shakeTimes } = this.shakeProps
+    const { shakeStart, shakeDist, shakeFreq, shakeDirNow, shakeI, shakeTimes, shakeTimesAtOnce } = this.shakeProps
     //
-    if(shakeTimes % 2 === 0) {
-      shakeTimes === 0 ? 
-        this.setProp(shakePara, this[shakePara] + shakeDist / 2) : this.setProp(shakePara, this[shakePara] + shakeDist)
-    } else {
-      this.setProp(shakePara, this[shakePara] - shakeDist)
-    }
-    shakeDirNow === 'right' ? this.setProp('shakeProps', {
-      ...this.shakeProps,
-      shakeDirNow: 'left',
-    }) : 
-    this.setProp('shakeProps', {
-      ...this.shakeProps,
-      shakeDirNow: 'right',
-    })
-    //
-    this.setProp('shakeProps', {
-      ...this.shakeProps,
-      shakeI: shakeI + 1,
-      shakeTimes: 
-        (shakeI !== 0 && shakeI % shakeFreq === 0) ? shakeTimes + 1 : shakeTimes,
-    })
+    shakeTimes === shakeTimesAtOnce && this.setProp('shakeProps', this.shakePropsInit)
+
+    if(shakeStart) {
+      if(shakeTimes % 2 === 0) {
+        shakeTimes === 0 ? 
+          this.setProp(shakePara, this[shakePara] + shakeDist / 2) : this.setProp(shakePara, this[shakePara] + shakeDist)
+      } else {
+        this.setProp(shakePara, this[shakePara] - shakeDist)
+      }
+      shakeDirNow === 'right' ? 
+        this.setProp('shakeProps', {
+          ...this.shakeProps,
+          shakeDirNow: 'left',
+        }) : 
+        this.setProp('shakeProps', {
+          ...this.shakeProps,
+          shakeDirNow: 'right',
+        })
+      //
+      this.setProp('shakeProps', {
+        ...this.shakeProps,
+        shakeI: shakeI + 1,
+        shakeTimes: 
+          (shakeI !== 0 && shakeI % shakeFreq === 0) ? shakeTimes + 1 : shakeTimes,
+      })
+    } 
     return this
   }
   drawOnCanvas(ctx, x, y) {
@@ -618,7 +632,6 @@ const UILayer = () => new Layer()
 export class ControllableObj extends BasicStaticImgObj {
   constructor(props) {
     super(props)
-    this.gravityAy = 0.2
     this.movement = {
       ...this.movement,
       vStandard: 6,
@@ -633,6 +646,7 @@ export class ControllableObj extends BasicStaticImgObj {
     this.useGravity = true
     this.attachWall = false
     this.attackType = 'default'
+    this.attackHitbox = null
     //
     this.noHurt = false
     this.endNoHurt = () => setTimeout(() => {
@@ -715,25 +729,34 @@ export class ControllableObj extends BasicStaticImgObj {
     //move by keyCode
     if(checkMoveSet(37) || checkMoveSet(65)) {
       console.log(this.attachWall)
-      // console.log('left')
-      // this.movement.vy = 0
+      this.setProp('direction', 'left')
       // const { slopeX, slopeY } = this.movement
       this.movement.vx = this.movement.vStandard * -1
       // this.movement.ax = this.movement.aBasic * -1
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
-      // console.log('right')
+      this.setProp('direction', 'right')
       console.log(this.attachWall)
-      // this.movement.vy = 0
       this.movement.vx = this.movement.vStandard * 1
       // this.movement.ax = this.movement.aBasic * 1
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
       console.log('up')
     }
+    
+    if(checkMoveSet(40) || checkMoveSet(83)) {
+      // console.log('down')
+      // this.movement.vx = 0
+      this.onRope && this.setProp('movement', {
+        ...this.movement,
+        ropeVy: this.movement.vStandard * 1
+      })
+      this.movement.vy = this.movement.vStandard * 1
+    }
+    // console.log(keyCode)
+    //spacial movements
     if(checkMoveSet(32)) { //space is jump
       // console.log('jump')
-      // this.movement.vx = 0
       //reset onRope
       this.setProp('onRope', false)
       //wall jump
@@ -752,16 +775,14 @@ export class ControllableObj extends BasicStaticImgObj {
         this.movement.vy = this.movement.vStandard * -1
       }
     }
-    if(checkMoveSet(40) || checkMoveSet(83)) {
-      // console.log('down')
-      // this.movement.vx = 0
-      this.onRope && this.setProp('movement', {
-        ...this.movement,
-        ropeVy: this.movement.vStandard * 1
-      })
-      this.movement.vy = this.movement.vStandard * 1
+    if(checkMoveSet(16)) { //shift is attack
+      if(this.attackHitbox && !this.attackHitbox.display) {
+        this.attackHitbox.setProp('display', true)
+        setTimeout(() => {
+          this.attackHitbox.setProp('display', false)
+        }, 360)
+      }
     }
-    // console.log(keyCode)
   }
   collideWithPlatform(platformY) {
     this.setProp('movement', {

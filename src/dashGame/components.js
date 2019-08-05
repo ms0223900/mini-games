@@ -32,14 +32,15 @@ export const SpeedUpPlatform = (width, height, x, y, speedUp, cloneId) => {
 }
 
 //horizontal moving platform(only x changed)
-export const MovingPlatForm = (width=80, height=10, x, y, cloneId, moveTo, moveVx=6, moveVy=0) => {
+export const MovingObj = (width=80, height=10, x, y, cloneId, moveTo, moveVx=6, moveVy=0, useGravity=false, type='default') => {
   const obj = new BasicObj({
-    id: 'movingPlatform', cloneId,
+    id: 'movingObj', cloneId, type,
     x, y, width, height,
     fillStyle: '#a0f',
+    useGravity,
   })
-  obj.useGravity = false
   obj.MPSpec = {
+    isPause: false,
     dirNow: moveVx !== 0 ? 'right' : 'down',
     movePos: moveVx !== 0 ? x : y,
     moveFrom: moveVx !== 0 ? x : y,
@@ -54,32 +55,35 @@ export const MovingPlatForm = (width=80, height=10, x, y, cloneId, moveTo, moveV
     ay: 0,
   }
   const moveBF = (obj) => {
-    const { dirNow, movePos, moveFrom, moveTo, moveVx } = obj.MPSpec
+    const { isPause, dirNow, movePos, moveFrom, moveTo, moveVx } = obj.MPSpec
     // console.log(movePos)
-    if(dirNow === 'right' || dirNow === 'down') {
-      if(movePos < moveTo) {
-        obj.setProp('movement', {
-          ...obj.movement,
-          vx: moveVx,
-          vy: moveVy,
-        })
-      } else {
-        obj.MPSpec.dirNow = dirNow === 'right' ? 'left' : 'up'
+    if(!isPause) {
+      if(dirNow === 'right' || dirNow === 'down') {
+        if(movePos < moveTo) {
+          obj.setProp('movement', {
+            ...obj.movement,
+            vx: moveVx,
+            vy: moveVy,
+          })
+        } else {
+          obj.MPSpec.dirNow = dirNow === 'right' ? 'left' : 'up'
+        }
+      } else if(dirNow === 'left' || dirNow === 'up') {
+        if(movePos > moveFrom) {
+          // obj.MPSpec.movePos -= moveVx
+          obj.setProp('movement', {
+            ...obj.movement,
+            vx: -moveVx,
+            vy: -moveVy,
+          })
+        } else {
+          obj.MPSpec.dirNow = dirNow === 'left' ? 'right' : 'down'
+        }
       }
-    } else if(dirNow === 'left' || dirNow === 'up') {
-      if(movePos > moveFrom) {
-        // obj.MPSpec.movePos -= moveVx
-        obj.setProp('movement', {
-          ...obj.movement,
-          vx: -moveVx,
-          vy: -moveVy,
-        })
-      } else {
-        obj.MPSpec.dirNow = dirNow === 'left' ? 'right' : 'down'
-      }
+      obj.MPSpec.movePos = 
+        (dirNow === 'left' || dirNow === 'right' ) ? obj.x : obj.y
     }
-    obj.MPSpec.movePos = 
-      (dirNow === 'left' || dirNow === 'right' ) ? obj.x : obj.y
+    
     // console.log(movePos)
   }
 
@@ -143,6 +147,15 @@ export const SlopeLines = (x, y, cloneId) => {
   return obj
 }
 
+export const PlayerAttackHitbox = (x, y, width=40, height=40) => {
+  const obj = new BasicObj({
+    id: 'attackHitbox', x, y,
+    width, height,
+    fillStyle: '#da0',
+  })
+  return obj
+}
+
 export const Player = (x, y, width=60, height=100) => {
   const obj = new ControllableObj({
     id: 'player',
@@ -166,6 +179,20 @@ export const Player = (x, y, width=60, height=100) => {
     x: width * 0.8,
     y: height ,
   }
+  obj.attackHitbox = PlayerAttackHitbox(x + width, y + 30)
+  obj.attackHitbox.setProp('display', false)
+  const syncHitboxPos = (obj) => {
+    if(obj.direction === 'right') {
+      obj.attackHitbox.setProp('x', obj.x + obj.width)
+    } else {
+      obj.attackHitbox.setProp('x', obj.x - obj.attackHitbox.width)
+    }
+    obj.attackHitbox.setProp('y', obj.y + 30)
+  }
+  obj.newBehavior = [
+    ...obj.newBehavior,
+    syncHitboxPos
+  ]
   return obj
 }
 
@@ -243,8 +270,8 @@ export const PF04 = PlatForm(80, 10, 250, 350)
 export const PF05 = PlatForm(80, 10, 300, 400)
 export const PF06 = PlatForm(80, 10, 500, 450)
 export const PF07 = PlatForm(800, 200, 1290, 410)
-export const MPF01 = MovingPlatForm(100, 20, 300, 300, 0, 460, 2)
-export const MPF02 = MovingPlatForm(100, 20, 600, 100, 1, 400, 0, 2)
+export const MPF01 = MovingObj(100, 20, 300, 300, 0, 460, 2)
+export const MPF02 = MovingObj(100, 20, 600, 100, 1, 400, 0, 2)
 export const TDPF01 = TimeoutDropPlatform(350, 250, 1000)
 export const ground = PlatForm(10000, 10, 0, canvasSpec.height - 10)
 export const PFs = [PF01, PF02, PF03, PF04, PF05, PF06, PF07, ground, MPF01, MPF02, TDPF01]
@@ -281,6 +308,12 @@ export const RotatingLBs = [RLB01]
 // export const TimeoutDropPFs = [TDPF01]
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(200, 100)
+export const myPlayer = Player(1400, 200)
+export const playerAttackHitbox = PlayerAttackHitbox(100, 100)
+//
+
+export const Enemy01 = MovingObj(40, 40, 1400, 370, 0, 1700, 3, 0, false, 'enemy')
+export const Enemies = [Enemy01]
+console.log(Enemy01)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

@@ -14,7 +14,7 @@ import {
   Springs,
   SpeedupPlatforms,
   RotatingLBs,
-  TimeoutDropPFs,
+  Enemies,
 } from './components'
 import { 
   checkPlayerCollideWithPlatform,
@@ -155,6 +155,52 @@ class DashingGame extends Game {
         }
       }
     })
+    //
+    Enemies.forEach(enemy => {
+      enemy.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      //check collide with player hitbox(attack)
+      const { direction } = myPlayer
+      const { attackHitbox } = myPlayer
+
+      camera.shake('offsetX')
+      const playerAttackCollistionRes = simpleCheckObjCollide(attackHitbox, enemy)
+      if(playerAttackCollistionRes && attackHitbox.display && !enemy.isAttacked) {
+        const { vx } = enemy.movement
+        enemy.setProp('fillStyle', '#ad0')
+        enemy.setProp('isAttacked', true)
+        enemy.setProp('prevProps', {
+          vx,
+        })
+        enemy.setProp('MPSpec', {
+          ...enemy.MPSpec,
+          isPause: true,
+        })
+        enemy.setProp('movement', {
+          ...enemy.movement,
+          // isMove: false,
+          vx: direction === 'right' ? 8 : -8
+        })
+        camera.setProp('shakeProps', {
+          ...camera.shakeProps,
+          shakeStart: true
+        })
+        //
+        setTimeout(() => {
+          enemy.setProp('fillStyle', '#a0f')
+          // enemy.setProp('isAttacked', false)
+          enemy.setProp('MPSpec', {
+            ...enemy.MPSpec,
+            isPause: false,
+          })
+          enemy.setProp('movement', {
+            ...enemy.movement,
+            // isMove: true,
+            vx: enemy.prevProps.vx,
+          })
+        }, 200)
+        setTimeout(() => enemy.setProp('isAttacked', false), 500)
+      }
+    })
     //jump through platform type
     myPlayer.render(this.ctx, -camera.offsetX, -camera.offsetY)
     // myPlayer.isInAir = false
@@ -164,6 +210,7 @@ class DashingGame extends Game {
       baseVy: 0,
     }
     myPlayer.useGravity = true
+    myPlayer.attackHitbox.render(this.ctx,  -camera.offsetX, -camera.offsetY)
     // myPlayer.isInAir = true
     platforms.forEach((pf) => {
       pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
@@ -182,7 +229,7 @@ class DashingGame extends Game {
         this.checkNoMoveSets()
         myPlayer.collideWithPlatform(pf.y)
         //moving platform
-        if(pf.id === 'movingPlatform' || pf.id === 'dropPlatform') {
+        if(pf.id === 'movingObj' || pf.id === 'dropPlatform') {
           //temp platform only horizontal movement
           myPlayer.movement = {
             ...myPlayer.movement,
