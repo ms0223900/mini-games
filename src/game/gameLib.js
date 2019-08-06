@@ -203,6 +203,9 @@ export class BasicObj {
         let newVx = vx
         if(this.id !== 'movingObj') {
           newVx = Math.abs(vx + ax) === 0 ? 0 : vx + ax
+          // if(this.isInAir) {
+          //   newVx = vx > 0 ? 
+          // }
           this.movement.vx = newVx
         }
         newX = this.x + baseVx + newVx
@@ -226,6 +229,14 @@ export class BasicObj {
     } else {
       this.blinkSpec = initBlink
     }
+  }
+  collideWithPlatform(platformY) {
+    this.setProp('movement', {
+      ...this.movement,
+      vy: 0,
+    })
+    this.setProp('y', platformY - this.height)
+    this.setProp('isInAir', false)
   }
   drawOnCanvas(ctx, x, y) {
     ctx.save()
@@ -634,7 +645,7 @@ export class ControllableObj extends BasicStaticImgObj {
     super(props)
     this.movement = {
       ...this.movement,
-      vStandard: 6,
+      vBasic: 5,
       vx: 0,
       vy: 0,
       // ay: this.gravityAy, //gravity
@@ -701,7 +712,7 @@ export class ControllableObj extends BasicStaticImgObj {
         this.setProp('x', this.ropePosX)
         this.setProp('movement', {
           ...this.movement,
-          ropeVy: moveUp ? this.movement.vStandard * -1 : this.movement.vStandard * 1 
+          ropeVy: moveUp ? this.movement.vBasic * -1 : this.movement.vBasic * 1 
         })
         this.setProp('onRope', true) //set obj is on rope
       }
@@ -731,13 +742,21 @@ export class ControllableObj extends BasicStaticImgObj {
       console.log(this.attachWall)
       this.setProp('direction', 'left')
       // const { slopeX, slopeY } = this.movement
-      this.movement.vx = this.movement.vStandard * -1
+      if(this.isInAir && !this.attachWall) {
+        this.movement.ax = -0.2
+      } else {
+        this.movement.vx = this.movement.vBasic * -1
+      }
       // this.movement.ax = this.movement.aBasic * -1
     }  
     if(checkMoveSet(39) || checkMoveSet(68)) {
       this.setProp('direction', 'right')
       console.log(this.attachWall)
-      this.movement.vx = this.movement.vStandard * 1
+      if(this.isInAir && !this.attachWall) {
+        this.movement.ax = 0.2
+      } else {
+        this.movement.vx = this.movement.vBasic * 1
+      }
       // this.movement.ax = this.movement.aBasic * 1
     }
     if(checkMoveSet(38) || checkMoveSet(87)) {
@@ -749,9 +768,9 @@ export class ControllableObj extends BasicStaticImgObj {
       // this.movement.vx = 0
       this.onRope && this.setProp('movement', {
         ...this.movement,
-        ropeVy: this.movement.vStandard * 1
+        ropeVy: this.movement.vBasic * 1
       })
-      this.movement.vy = this.movement.vStandard * 1
+      this.movement.vy = this.movement.vBasic * 1
     }
     // console.log(keyCode)
     //spacial movements
@@ -768,11 +787,11 @@ export class ControllableObj extends BasicStaticImgObj {
       if(this.useGravity) {
         if(!this.isInAir) {
           // console.log('up')
-          this.movement.vy = this.movement.vStandard * -1
+          this.movement.vy = this.movement.vBasic * -1
         }
         this.setProp('isInAir', true)
       } else {
-        this.movement.vy = this.movement.vStandard * -1
+        this.movement.vy = this.movement.vBasic * -1
       }
     }
     if(checkMoveSet(16)) { //shift is attack
@@ -783,14 +802,6 @@ export class ControllableObj extends BasicStaticImgObj {
         }, 360)
       }
     }
-  }
-  collideWithPlatform(platformY) {
-    this.setProp('movement', {
-      ...this.movement,
-      vy: 0,
-    })
-    this.setProp('y', platformY - this.height)
-    this.setProp('isInAir', false)
   }
 }
 export class GroupObjs {

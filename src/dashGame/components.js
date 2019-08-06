@@ -32,7 +32,7 @@ export const SpeedUpPlatform = (width, height, x, y, speedUp, cloneId) => {
 }
 
 //horizontal moving platform(only x changed)
-export const MovingObj = (width=80, height=10, x, y, cloneId, moveTo, moveVx=6, moveVy=0, useGravity=false, type='default') => {
+export const MovingObjWonder = (width=80, height=10, x, y, cloneId, moveTo, moveVx=6, moveVy=0, useGravity=false, type='default') => {
   const obj = new BasicObj({
     id: 'movingObj', cloneId, type,
     x, y, width, height,
@@ -90,6 +90,24 @@ export const MovingObj = (width=80, height=10, x, y, cloneId, moveTo, moveVx=6, 
   obj.newBehavior = [...obj.newBehavior, moveBF]
   return obj
 }
+export const NormalMovingObj = (x, y, width=80, height=80, vBasic=5, cloneId=0, isWonderOnPlatform=true) => {
+  const obj = new BasicStaticImgObj({
+    id: 'normalMovingObj', x, y,
+    width, height, cloneId,
+    fillStyle: '#6d4c41'
+  })
+  obj.setProp('dev', true)
+  obj.setProp('movement', {
+    ...obj.movement,
+    isMove: true,
+    vBasic,
+  })
+  obj.setProp('isWonderOnPlatform', true)
+  isWonderOnPlatform && obj.setProp('wonderingPlatform', null) //string
+  obj.setProp('useGravity', true)
+  return obj
+}
+
 //
 
 export const TimeoutDropPlatform = (x, y, time, cloneId=10, width=60, height=20) => {
@@ -270,8 +288,8 @@ export const PF04 = PlatForm(80, 10, 250, 350)
 export const PF05 = PlatForm(80, 10, 300, 400)
 export const PF06 = PlatForm(80, 10, 500, 450)
 export const PF07 = PlatForm(800, 200, 1290, 410)
-export const MPF01 = MovingObj(100, 20, 300, 300, 0, 460, 2)
-export const MPF02 = MovingObj(100, 20, 600, 100, 1, 400, 0, 2)
+export const MPF01 = MovingObjWonder(100, 20, 300, 300, 0, 460, 2)
+export const MPF02 = MovingObjWonder(100, 20, 600, 100, 1, 400, 0, 2)
 export const TDPF01 = TimeoutDropPlatform(350, 250, 1000)
 export const ground = PlatForm(10000, 10, 0, canvasSpec.height - 10)
 export const PFs = [PF01, PF02, PF03, PF04, PF05, PF06, PF07, ground, MPF01, MPF02, TDPF01]
@@ -312,8 +330,9 @@ export const myPlayer = Player(1400, 200)
 export const playerAttackHitbox = PlayerAttackHitbox(100, 100)
 //
 
-export const Enemy01 = MovingObj(40, 40, 1400, 370, 0, 1700, 3, 0, false, 'enemy')
-export const Enemies = [Enemy01]
+export const Enemy01 = MovingObjWonder(40, 40, 1400, 370, 0, 1700, 3, 0, false, 'enemy')
+export const Enemy02 = NormalMovingObj(1400, 100, 100, 100, 4, 0)
+export const Enemies = [Enemy01, Enemy02]
 console.log(Enemy01)
 console.log('dash play: ', myPlayer)
 console.log('dash PF01: ', PF01)

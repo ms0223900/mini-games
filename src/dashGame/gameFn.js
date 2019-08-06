@@ -32,10 +32,10 @@ export const checkPlayerCollideWithPlatform = (player, obj) => {
   if(obj.movement.isMove && player.movement.isMove) {
     
     if(!player.isInAir && player.whichPF === obj.cloneId && simpleCheckObjCollide(playerNext, obj)) {
-      return true
+      return obj
     }
     if((points.playerA.y <= points.objA.y && points.playerA_next.y >= points.objA_next.y) && simpleCheckObjCollide(playerNext, obj)) {
-      return true
+      return obj
     } 
     // !simpleCheckObjCollide(player, obj) && player.setProp('whichPF', null)
     return false
@@ -43,7 +43,7 @@ export const checkPlayerCollideWithPlatform = (player, obj) => {
   //include complete intersection condition
   if(points.playerB_next.x >= points.objA.x && points.playerA_next.x <= points.objB.x) {
     if(points.playerA.y <= points.objA.y && points.playerA_next.y >= points.objA.y) {
-      return true
+      return obj
     }
     return false
   } 

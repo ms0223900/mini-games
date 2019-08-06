@@ -34,6 +34,7 @@ import detectRotatingBlock from './rotatingBlock'
 import climbRope from './rope'
 import moveOnSlope from './slope'
 import shake from './shakeFn'
+import { enemyShakeAndKnockback } from './enemy'
 
 let UITextBox
 window.onload = () => {
@@ -156,51 +157,8 @@ class DashingGame extends Game {
       }
     })
     //
-    Enemies.forEach(enemy => {
-      enemy.render(this.ctx, -camera.offsetX, -camera.offsetY)
-      //check collide with player hitbox(attack)
-      const { direction } = myPlayer
-      const { attackHitbox } = myPlayer
 
-      camera.shake('offsetX')
-      const playerAttackCollistionRes = simpleCheckObjCollide(attackHitbox, enemy)
-      if(playerAttackCollistionRes && attackHitbox.display && !enemy.isAttacked) {
-        const { vx } = enemy.movement
-        enemy.setProp('fillStyle', '#ad0')
-        enemy.setProp('isAttacked', true)
-        enemy.setProp('prevProps', {
-          vx,
-        })
-        enemy.setProp('MPSpec', {
-          ...enemy.MPSpec,
-          isPause: true,
-        })
-        enemy.setProp('movement', {
-          ...enemy.movement,
-          // isMove: false,
-          vx: direction === 'right' ? 8 : -8
-        })
-        camera.setProp('shakeProps', {
-          ...camera.shakeProps,
-          shakeStart: true
-        })
-        //
-        setTimeout(() => {
-          enemy.setProp('fillStyle', '#a0f')
-          // enemy.setProp('isAttacked', false)
-          enemy.setProp('MPSpec', {
-            ...enemy.MPSpec,
-            isPause: false,
-          })
-          enemy.setProp('movement', {
-            ...enemy.movement,
-            // isMove: true,
-            vx: enemy.prevProps.vx,
-          })
-        }, 200)
-        setTimeout(() => enemy.setProp('isAttacked', false), 500)
-      }
-    })
+    
     //jump through platform type
     myPlayer.render(this.ctx, -camera.offsetX, -camera.offsetY)
     // myPlayer.isInAir = false
@@ -215,6 +173,74 @@ class DashingGame extends Game {
     platforms.forEach((pf) => {
       pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
       const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
+      const checkObjCollideWithPlatform = (obj, platform) => {
+        const collideRes = checkPlayerCollideWithPlatform(obj, platform)
+        if(collideRes) {
+          //enemy wonder
+          if(obj.isWonderOnPlatform && !obj.wonderingPlatform) {
+            obj.setProp('wonderingPlatform', collideRes)
+          }
+          this.checkNoMoveSets()
+          obj.collideWithPlatform(pf.y)
+          //moving platform
+          if(pf.id === 'movingObj' || pf.id === 'dropPlatform') {
+            //temp platform only horizontal movement
+            obj.movement = {
+              ...obj.movement,
+              baseVx: pf.movement.vx,
+              baseVy: pf.movement.vy 
+            }
+            obj.useGravity = false
+            obj.whichPF = pf.cloneId
+          }
+          //timeout dropping platform
+          
+          if(pf.id === 'dropPlatform') {
+            const { dropTime } = pf
+            pf.setProp('fillStyle', '#a00')
+            //set timer
+            // pf.timer = setInterval(() => {
+            //   pf.dropTime.timeNow += 1
+            // }, 1000)
+            !pf.dropTime.timer && pf.setProp('dropTime', {
+              ...dropTime,
+              timer: setInterval(() => {
+                pf.dropTime.timeNow += 1000
+              }, 1000)
+            }) 
+            pf.shake()
+            // console.log(pf.dropTime.timer, pf.dropTime.timeNow)
+            if(pf.dropTime.timeNow >= pf.dropTime.maxTime) {
+              console.log('droping!')
+              pf.setProp('fillStyle', '#11a')
+              setTimeout(() => {
+                pf.setProp('dropTime', {
+                  ...dropTime,
+                  timeNow: 0,
+                })
+                pf.setProp('movement', {
+                  ...pf.movement,
+                  isMove: false,
+                  vy: 0
+                })
+                pf.setProp('y', pf.prevProps.y) //back to origin position
+              }, 2500)
+              pf.setProp('movement', {
+                ...pf.movement,
+                isMove: true,
+                vy: 3
+              })
+            }
+          }
+        } else {
+          pf.id === 'dropPlatform' && clearInterval(pf.dropTime.timer)
+          pf.setProp('dropTime', {
+            ...pf.dropTime,
+            timeNow: 0,
+            timer: null
+          })
+        }
+      }
       // console.log(collideRes)
         
       if(myPlayer.whichPF === pf.cloneId) { //should detect same platform
@@ -225,72 +251,41 @@ class DashingGame extends Game {
       if(pf.id === 'dropPlatform') {
         pf.setProp('fillStyle', '#9a0')
       }
-      if(collideRes) {
-        this.checkNoMoveSets()
-        myPlayer.collideWithPlatform(pf.y)
-        //moving platform
-        if(pf.id === 'movingObj' || pf.id === 'dropPlatform') {
-          //temp platform only horizontal movement
-          myPlayer.movement = {
-            ...myPlayer.movement,
-            baseVx: pf.movement.vx,
-            baseVy: pf.movement.vy 
-          }
-          myPlayer.useGravity = false
-          myPlayer.whichPF = pf.cloneId
-        }
-        //timeout dropping platform
-        
-        if(pf.id === 'dropPlatform') {
-          const { dropTime } = pf
-          pf.setProp('fillStyle', '#a00')
-          //set timer
-          // pf.timer = setInterval(() => {
-          //   pf.dropTime.timeNow += 1
-          // }, 1000)
-          !pf.dropTime.timer && pf.setProp('dropTime', {
-            ...dropTime,
-            timer: setInterval(() => {
-              pf.dropTime.timeNow += 1000
-            }, 1000)
-          }) 
-          pf.shake()
-          // console.log(pf.dropTime.timer, pf.dropTime.timeNow)
-          if(pf.dropTime.timeNow >= pf.dropTime.maxTime) {
-            console.log('droping!')
-            pf.setProp('fillStyle', '#11a')
-            setTimeout(() => {
-              pf.setProp('dropTime', {
-                ...dropTime,
-                timeNow: 0,
-              })
-              pf.setProp('movement', {
-                ...pf.movement,
-                isMove: false,
-                vy: 0
-              })
-              pf.setProp('y', pf.prevProps.y) //back to origin position
-            }, 2500)
-            pf.setProp('movement', {
-              ...pf.movement,
-              isMove: true,
-              vy: 3
-            })
-          }
-        }
-      } else {
-        pf.id === 'dropPlatform' && clearInterval(pf.dropTime.timer)
-        pf.setProp('dropTime', {
-          ...pf.dropTime,
-          timeNow: 0,
-          timer: null
-        })
-      }
-      //
       
+      checkObjCollideWithPlatform(myPlayer, pf)
+      Enemies.forEach(en => {
+        checkObjCollideWithPlatform(en, pf)
+      })
 
     })
-    
+    camera.shake('offsetX')
+    Enemies.forEach(enemy => {
+      enemy.render(this.ctx, -camera.offsetX, -camera.offsetY)
+      //check collide with player hitbox(attack)
+      const { direction } = myPlayer
+      const { attackHitbox } = myPlayer
+      const { wonderingPlatform, direction: enemyDir, x, width } = enemy
+
+      const playerAttackCollistionRes = simpleCheckObjCollide(attackHitbox, enemy)
+      if(playerAttackCollistionRes && attackHitbox.display && !enemy.isAttacked) {
+        enemyShakeAndKnockback(enemy, camera, direction)
+      }
+      //wonder movement on platform
+      if(wonderingPlatform) {
+        const reverse = () => 
+          enemy.setProp('movement', {
+            ...enemy.movement,
+            vx: enemy.movement.vx * -1
+          })
+        if(enemyDir === 'right' && x + width >= wonderingPlatform.x + wonderingPlatform.width) {
+          enemy.setProp('direction', 'left')
+          reverse()
+        } else if(enemyDir === 'left' && x <= wonderingPlatform.x) {
+          enemy.setProp('direction', 'right')
+          reverse()
+        }
+      }
+    })
     //
     //test player collide with slope(SL02 case)
     Slopes.forEach(sl => {
