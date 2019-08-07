@@ -125,6 +125,7 @@ export const TimeoutDropPlatform = (x, y, time, cloneId=10, width=60, height=20)
   obj.useGravity = false
   obj.dev = true
   obj.dropTime = {
+    isOnDrop: false,
     timeNow: 0,
     maxTime: time,
     timer: null
@@ -326,12 +327,12 @@ export const RotatingLBs = [RLB01]
 // export const TimeoutDropPFs = [TDPF01]
 
 // export const myPlayer = moveObj(100, 40, 190, 10)
-export const myPlayer = Player(1400, 200)
+export const myPlayer = Player(200, 200)
 export const playerAttackHitbox = PlayerAttackHitbox(100, 100)
 //
 
 export const Enemy01 = MovingObjWonder(40, 40, 1400, 370, 0, 1700, 3, 0, false, 'enemy')
-export const Enemy02 = NormalMovingObj(1400, 100, 100, 100, 4, 0)
+export const Enemy02 = NormalMovingObj(1400, 100, 60, 60, 4, 0)
 export const Enemies = [Enemy01, Enemy02]
 console.log(Enemy01)
 console.log('dash play: ', myPlayer)

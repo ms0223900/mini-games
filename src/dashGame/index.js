@@ -195,28 +195,36 @@ class DashingGame extends Game {
           }
           //timeout dropping platform
           
+
           if(pf.id === 'dropPlatform') {
+            
             const { dropTime } = pf
             pf.setProp('fillStyle', '#a00')
             //set timer
-            // pf.timer = setInterval(() => {
-            //   pf.dropTime.timeNow += 1
-            // }, 1000)
             !pf.dropTime.timer && pf.setProp('dropTime', {
               ...dropTime,
+              isOnDrop: obj.id + obj.cloneId,
               timer: setInterval(() => {
                 pf.dropTime.timeNow += 1000
+                console.log(obj, 'time')
               }, 1000)
             }) 
-            pf.shake()
-            // console.log(pf.dropTime.timer, pf.dropTime.timeNow)
+            // pf.shake()
+            // pf.setProp('shakeProps', {
+            //   ...camera.shakeProps,
+            //   shakeStart: true
+            // })
+            console.log(pf.dropTime.timer, pf.dropTime.timeNow, pf.dropTime.isOnDrop)
             if(pf.dropTime.timeNow >= pf.dropTime.maxTime) {
               console.log('droping!')
               pf.setProp('fillStyle', '#11a')
+              clearInterval(pf.dropTime.timer)
               setTimeout(() => {
                 pf.setProp('dropTime', {
                   ...dropTime,
+                  isOnDrop: false,
                   timeNow: 0,
+                  timer: null,
                 })
                 pf.setProp('movement', {
                   ...pf.movement,
@@ -233,13 +241,32 @@ class DashingGame extends Game {
             }
           }
         } else {
-          pf.id === 'dropPlatform' && clearInterval(pf.dropTime.timer)
-          pf.setProp('dropTime', {
-            ...pf.dropTime,
-            timeNow: 0,
-            timer: null
-          })
+          if(pf.dropTime) {
+            pf.dropTime.isOnDrop === obj.id + obj.cloneId 
+            && pf.setProp('dropTime', {
+              ...pf.dropTime,
+              isOnDrop: false,
+              timeNow: 0,
+              // timer: null,
+            })
+            !pf.dropTime.isOnDrop && pf.id === 'dropPlatform' && clearInterval(pf.dropTime.timer)
+          }
+          
+          // pf.id === 'dropPlatform' 
+          //   && !pf.dropTime.isOnDrop
+          //   && clearInterval(pf.dropTime.timer)
+          //   && pf.setProp('dropTime', {
+          //     ...pf.dropTime,
+          //     isOnDrop: false,
+          //     timeNow: 0,
+          //     timer: null
+          //   })
+          // pf.dropTime && !pf.dropTime.isOnDrop && pf.setProp('dropTime', {
+          //   ...pf.dropTime,
+          //   isOnDrop: false,
+          // })
         }
+
       }
       // console.log(collideRes)
         
@@ -253,6 +280,7 @@ class DashingGame extends Game {
       }
       
       checkObjCollideWithPlatform(myPlayer, pf)
+      //enemies collide with platforms
       Enemies.forEach(en => {
         checkObjCollideWithPlatform(en, pf)
       })
@@ -270,6 +298,7 @@ class DashingGame extends Game {
       if(playerAttackCollistionRes && attackHitbox.display && !enemy.isAttacked) {
         enemyShakeAndKnockback(enemy, camera, direction)
       }
+
       //wonder movement on platform
       if(wonderingPlatform) {
         const reverse = () => 
@@ -285,6 +314,29 @@ class DashingGame extends Game {
           reverse()
         }
       }
+      //player step on enemies
+      const stepCollideRes = checkPlayerCollideWithPlatform(myPlayer, enemy)
+      if(stepCollideRes) {
+        myPlayer.setProp('movement', {
+          ...myPlayer.movement,
+          vy: -5,
+        })
+        enemy.setProp('movement', {
+          ...enemy.movement,
+          isMove: !enemy.movement.isMove,
+        })
+        camera.setProp('shakeProps', {
+          ...camera.shakeProps,
+          shakeStart: true
+        })
+        setTimeout(() => {
+          enemy.setProp('movement', {
+            ...enemy.movement,
+            isMove: true,
+          })
+        }, 2000)
+      }
+      //
     })
     //
     //test player collide with slope(SL02 case)
@@ -297,8 +349,6 @@ class DashingGame extends Game {
       rope.render(this.ctx, -camera.offsetX, -camera.offsetY)
       climbRope(myPlayer, rope)
     })
-
-
     //camera move defined by player
     camera.updatePos(playerCenter.x, playerCenter.y)
     !this.isPause && requestAnimationFrame( this.render.bind(this) )
