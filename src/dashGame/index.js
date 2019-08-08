@@ -175,6 +175,16 @@ class DashingGame extends Game {
       const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
       const checkObjCollideWithPlatform = (obj, platform) => {
         const collideRes = checkPlayerCollideWithPlatform(obj, platform)
+        const resetDrop = () => {
+          clearInterval(pf.dropTime.timer)
+          pf.setProp('dropTime', {
+            ...pf.dropTime,
+            isOnDrop: false,
+            timeNow: 0,
+            timer: null,
+          })
+        }
+        //
         if(collideRes) {
           //enemy wonder
           if(obj.isWonderOnPlatform && !obj.wonderingPlatform) {
@@ -193,39 +203,36 @@ class DashingGame extends Game {
             obj.useGravity = false
             obj.whichPF = pf.cloneId
           }
+          
           //timeout dropping platform
           
-
           if(pf.id === 'dropPlatform') {
-            
             const { dropTime } = pf
             pf.setProp('fillStyle', '#a00')
             //set timer
-            !pf.dropTime.timer && pf.setProp('dropTime', {
-              ...dropTime,
-              isOnDrop: obj.id + obj.cloneId,
-              timer: setInterval(() => {
-                pf.dropTime.timeNow += 1000
-                console.log(obj, 'time')
-              }, 1000)
-            }) 
-            // pf.shake()
-            // pf.setProp('shakeProps', {
-            //   ...camera.shakeProps,
-            //   shakeStart: true
-            // })
-            console.log(pf.dropTime.timer, pf.dropTime.timeNow, pf.dropTime.isOnDrop)
+            if(!pf.dropTime.timer) {
+              console.log('collide and set timer')
+              pf.setProp('dropTime', {
+                ...dropTime,
+                isOnDrop: obj.id + obj.cloneId,
+                timer: setInterval(() => {
+                  pf.dropTime.timeNow += 1000
+                  console.log(obj, 'time')
+                }, 1000)
+              }) 
+            }
+            pf.shake()
+            pf.setProp('shakeProps', {
+              ...pf.shakeProps,
+              shakeStart: true
+            })
             if(pf.dropTime.timeNow >= pf.dropTime.maxTime) {
-              console.log('droping!')
-              pf.setProp('fillStyle', '#11a')
-              clearInterval(pf.dropTime.timer)
+              resetDrop()
+              pf.setProp('movement', {
+                ...pf.movement,
+                isMove: true, vy: 3
+              })
               setTimeout(() => {
-                pf.setProp('dropTime', {
-                  ...dropTime,
-                  isOnDrop: false,
-                  timeNow: 0,
-                  timer: null,
-                })
                 pf.setProp('movement', {
                   ...pf.movement,
                   isMove: false,
@@ -233,38 +240,12 @@ class DashingGame extends Game {
                 })
                 pf.setProp('y', pf.prevProps.y) //back to origin position
               }, 2500)
-              pf.setProp('movement', {
-                ...pf.movement,
-                isMove: true,
-                vy: 3
-              })
             }
           }
         } else {
-          if(pf.dropTime) {
-            pf.dropTime.isOnDrop === obj.id + obj.cloneId 
-            && pf.setProp('dropTime', {
-              ...pf.dropTime,
-              isOnDrop: false,
-              timeNow: 0,
-              // timer: null,
-            })
-            !pf.dropTime.isOnDrop && pf.id === 'dropPlatform' && clearInterval(pf.dropTime.timer)
+          if(pf.dropTime && pf.dropTime.isOnDrop === obj.id + obj.cloneId) {
+            resetDrop()
           }
-          
-          // pf.id === 'dropPlatform' 
-          //   && !pf.dropTime.isOnDrop
-          //   && clearInterval(pf.dropTime.timer)
-          //   && pf.setProp('dropTime', {
-          //     ...pf.dropTime,
-          //     isOnDrop: false,
-          //     timeNow: 0,
-          //     timer: null
-          //   })
-          // pf.dropTime && !pf.dropTime.isOnDrop && pf.setProp('dropTime', {
-          //   ...pf.dropTime,
-          //   isOnDrop: false,
-          // })
         }
 
       }
