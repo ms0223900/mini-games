@@ -11,6 +11,11 @@ const climbRope = (player, rope) => {
   }
   if(simpleCheckObjCollide(playerCenter, rope)) {
     player.attachRope = true
+    player.onRope && player.setProp('movement', {
+      ...player.movement,
+      vx: 0,
+      vy: 0,
+    })
     player.ropePosX = rope.x + rope.width / 2 - player.width / 2
   } else {
     player.attachRope = false

@@ -13,6 +13,7 @@ const moveOnSlope = (obj, slope) => {
   }
   const playerSlopePoints = [playerSlopePoint, playerSlopePoint_next]
   const slopeLines = getVectors(slope.pointsForLines)
+  //
   for (let i = 0; i < slopeLines.length; i++) {
     const slopeLine = slopeLines[i];
     const res = checkLineIntersection(playerSlopePoints, [slopeLine.A, slopeLine.B])
@@ -24,9 +25,11 @@ const moveOnSlope = (obj, slope) => {
     const setNewPos_rightOrLeft = () => {
       obj.slopePosUpdate_right = slopeMoveNewPos_right
       obj.slopePosUpdate_left = slopeMoveNewPos_left
+      obj.setProp('isInAir', false)
       if(!slopeMoveNewPos_right || !slopeMoveNewPos_left) {
         // console.log('falsesss')
         obj.setProp('onSlope', false)
+        obj.setProp('isInAir', true)
       }
     }
     //

@@ -94,10 +94,12 @@ class DashingGame extends Game {
           vy: 0,
         })
         this.checkNoMoveSets()
-        collideRes === 'bottom' ? 
-          myPlayer.setProp('y', wb.y - myPlayer.height) :
+        if(collideRes === 'bottom') {
+          myPlayer.setProp('y', wb.y - myPlayer.height)
+          myPlayer.setProp('isInAir', false)
+        } else {
           myPlayer.setProp('y', wb.y + wb.height)
-        collideRes === 'bottom' && myPlayer.setProp('isInAir', false)
+        }
       } else if(collideRes === 'left' || collideRes === 'right') {
         myPlayer.attachWall = true
         myPlayer.setProp('movement', {
@@ -134,12 +136,10 @@ class DashingGame extends Game {
           myPlayer.whichSpf = null
           myPlayer.setProp('movement', {
             ...myPlayer.movement,
-            baseVx: 0
-          })
-          myPlayer.setProp('movement', {
-            ...myPlayer.movement,
+            baseVx: 0,
             vx: myPlayer.movement.vx + spf.speedUp
           })
+          myPlayer.setProp('isInAir', true)
         }
       }
       if(collideRes) {
@@ -151,6 +151,7 @@ class DashingGame extends Game {
             ...myPlayer.movement,
             baseVx: spf.speedUp
           })
+          myPlayer.setProp('isInAir', false)
           // myPlayer.useGravity = false
           myPlayer.whichSpf = spf.cloneId
         }
@@ -173,6 +174,7 @@ class DashingGame extends Game {
     platforms.forEach((pf) => {
       pf.render(this.ctx, -camera.offsetX, -camera.offsetY)
       const collideRes = checkPlayerCollideWithPlatform(myPlayer, pf)
+      //
       const checkObjCollideWithPlatform = (obj, platform) => {
         const collideRes = checkPlayerCollideWithPlatform(obj, platform)
         const resetDrop = () => {
@@ -200,6 +202,7 @@ class DashingGame extends Game {
               baseVx: pf.movement.vx,
               baseVy: pf.movement.vy 
             }
+            obj.setProp('isInAir', false)
             obj.useGravity = false
             obj.whichPF = pf.cloneId
           }
@@ -209,6 +212,7 @@ class DashingGame extends Game {
           if(pf.id === 'dropPlatform') {
             const { dropTime } = pf
             pf.setProp('fillStyle', '#a00')
+            obj.setProp('isInAir', false)
             //set timer
             if(!pf.dropTime.timer) {
               console.log('collide and set timer')
@@ -244,6 +248,7 @@ class DashingGame extends Game {
           }
         } else {
           if(pf.dropTime && pf.dropTime.isOnDrop === obj.id + obj.cloneId) {
+            obj.setProp('isInAir', true)
             resetDrop()
           }
         }
